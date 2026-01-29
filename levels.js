@@ -18,7 +18,26 @@ const Levels = {
         2: 5,   // Initiate: 5 characters
         3: 8,   // Hacker: 8 characters
         4: 10,  // Expert: 10 characters
-        5: 20   // Master: 20 characters
+        5: 15,  // Master: 15 characters
+        6: 12,  // Legendary: 12 characters
+        endless: 8  // Endless mode: 8 characters
+    },
+
+    // =========================================
+    // Endless Mode Configuration
+    // =========================================
+    endlessMode: {
+        allCiphers: [
+            'reversed', 'rot13', 'simpleShift', 'pigLatin', 'rot5',
+            'caesar', 'atbash', 'a1z26', 'keyword', 'beaufort',
+            'vigenere', 'railFence', 'morse', 'binary', 'playfair', 'polybius',
+            'affine', 'substitution', 'columnar', 'hex', 'bifid', 'adfgx',
+            'doubleCaesar', 'reverseCaesar', 'atbashVigenere', 'fourSquare',
+            'xorCipher', 'base64ish'
+        ],
+        basePoints: 100,
+        pointsIncreasePerRound: 25,
+        xpPerSolve: 25
     },
 
     /**
@@ -105,7 +124,7 @@ const Levels = {
             id: 1,
             name: 'Rookie',
             description: 'Basic ciphers to get you started',
-            ciphers: ['reversed', 'rot13', 'simpleShift'],
+            ciphers: ['reversed', 'rot13', 'simpleShift', 'pigLatin', 'rot5'],
             wordLength: 3,
             challengesPerLevel: 5,
             timeLimit: 120,
@@ -114,6 +133,7 @@ const Levels = {
             timeBonus: 2,
             unlockRequirement: 0,
             streakMultiplier: 1.1,
+            xpReward: 50,
             completionMessages: [
                 "You've taken your first steps into cryptography!",
                 "Not bad for a beginner! The codes are getting nervous.",
@@ -124,7 +144,7 @@ const Levels = {
             id: 2,
             name: 'Initiate',
             description: 'Classic ciphers with more challenge',
-            ciphers: ['caesar', 'atbash', 'a1z26'],
+            ciphers: ['caesar', 'atbash', 'a1z26', 'keyword', 'beaufort'],
             wordLength: 5,
             challengesPerLevel: 5,
             timeLimit: 100,
@@ -133,6 +153,7 @@ const Levels = {
             timeBonus: 3,
             unlockRequirement: 1,
             streakMultiplier: 1.15,
+            xpReward: 75,
             completionMessages: [
                 "Julius Caesar would be impressed!",
                 "You're cracking codes like a true initiate.",
@@ -143,7 +164,7 @@ const Levels = {
             id: 3,
             name: 'Hacker',
             description: 'Complex ciphers requiring more thought',
-            ciphers: ['vigenere', 'railFence', 'morse', 'binary'],
+            ciphers: ['vigenere', 'railFence', 'morse', 'binary', 'playfair', 'polybius'],
             wordLength: 8,
             challengesPerLevel: 5,
             timeLimit: 120,
@@ -152,6 +173,7 @@ const Levels = {
             timeBonus: 4,
             unlockRequirement: 2,
             streakMultiplier: 1.2,
+            xpReward: 100,
             completionMessages: [
                 "You're hacking through ciphers like a pro!",
                 "The digital realm trembles at your approach.",
@@ -162,7 +184,7 @@ const Levels = {
             id: 4,
             name: 'Expert',
             description: 'Advanced ciphers for seasoned crackers',
-            ciphers: ['affine', 'substitution', 'columnar', 'hex'],
+            ciphers: ['affine', 'substitution', 'columnar', 'hex', 'bifid', 'adfgx'],
             wordLength: 10,
             challengesPerLevel: 5,
             timeLimit: 150,
@@ -171,6 +193,7 @@ const Levels = {
             timeBonus: 5,
             unlockRequirement: 3,
             streakMultiplier: 1.25,
+            xpReward: 150,
             completionMessages: [
                 "Expert-level skills unlocked!",
                 "Even the NSA is taking notes.",
@@ -181,8 +204,8 @@ const Levels = {
             id: 5,
             name: 'Master',
             description: 'Combined ciphers - the ultimate test',
-            ciphers: ['doubleCaesar', 'reverseCaesar', 'atbashVigenere'],
-            wordLength: 20,
+            ciphers: ['doubleCaesar', 'reverseCaesar', 'atbashVigenere', 'fourSquare'],
+            wordLength: 15,
             challengesPerLevel: 5,
             timeLimit: 180,
             maxAttempts: 5,
@@ -190,10 +213,31 @@ const Levels = {
             timeBonus: 8,
             unlockRequirement: 4,
             streakMultiplier: 1.5,
+            xpReward: 250,
             completionMessages: [
-                "LEGENDARY! You've mastered all ciphers!",
+                "Master-level complete! One level remains...",
                 "The Enigma machine weeps at your brilliance.",
-                "Congratulations, Cipher Master! You are unstoppable!"
+                "Almost legendary! Can you handle the final challenge?"
+            ]
+        },
+        {
+            id: 6,
+            name: 'Legendary',
+            description: 'Modern cryptography concepts - for true masters',
+            ciphers: ['xorCipher', 'base64ish', 'fourSquare', 'bifid', 'playfair'],
+            wordLength: 12,
+            challengesPerLevel: 5,
+            timeLimit: 240,
+            maxAttempts: 6,
+            basePoints: 750,
+            timeBonus: 10,
+            unlockRequirement: 5,
+            streakMultiplier: 2.0,
+            xpReward: 500,
+            completionMessages: [
+                "LEGENDARY STATUS ACHIEVED! You are a true Cipher Master!",
+                "You've conquered the impossible! The cryptographic world bows to you.",
+                "Beyond legendary! You've transcended mere mortal codebreaking!"
             ]
         }
     ],

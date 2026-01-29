@@ -12,6 +12,8 @@ const GameState = {
     currentChallenge: null,
     challengeNumber: 0,
     totalChallenges: 5,
+    isEndlessMode: false,
+    endlessRound: 0,
     
     // Scoring
     totalScore: 0,
@@ -31,6 +33,9 @@ const GameState = {
     // Notepad content
     notepadContent: '',
     
+    // Current theme
+    currentTheme: 'cyber',
+    
     // Player progress (persisted)
     stats: {
         totalGamesPlayed: 0,
@@ -41,10 +46,23 @@ const GameState = {
         highestLevel: 1,
         totalTimePlayed: 0,
         cipherStats: {},
-        // Game history for stats
         gameHistory: [],
-        // Average time per cipher
-        averageTimes: {}
+        averageTimes: {},
+        // XP System
+        xp: 0,
+        level: 1,
+        // Daily Streak
+        dailyStreak: 0,
+        lastPlayDate: null,
+        // Achievements
+        achievements: [],
+        // Endless mode high score
+        endlessHighScore: 0,
+        endlessHighRound: 0,
+        // Theme unlocks
+        unlockedThemes: ['cyber'],
+        // Total ciphers solved (for achievements)
+        totalCiphersSolved: 0
     },
     
     // Level summaries for current session
@@ -54,6 +72,423 @@ const GameState = {
         totalAttempts: 0,
         fastestTime: Infinity,
         totalScore: 0
+    }
+};
+
+// =========================================
+// XP & Leveling System
+// =========================================
+const XPSystem = {
+    // XP required for each level (exponential curve)
+    getXPForLevel(level) {
+        return Math.floor(100 * Math.pow(1.5, level - 1));
+    },
+    
+    // Get total XP needed to reach a level
+    getTotalXPForLevel(level) {
+        let total = 0;
+        for (let i = 1; i < level; i++) {
+            total += this.getXPForLevel(i);
+        }
+        return total;
+    },
+    
+    // Calculate level from total XP
+    calculateLevel(totalXP) {
+        let level = 1;
+        let xpNeeded = this.getXPForLevel(level);
+        let xpRemaining = totalXP;
+        
+        while (xpRemaining >= xpNeeded) {
+            xpRemaining -= xpNeeded;
+            level++;
+            xpNeeded = this.getXPForLevel(level);
+        }
+        
+        return { level, currentXP: xpRemaining, xpNeeded };
+    },
+    
+    // Award XP and check for level up
+    awardXP(amount) {
+        const oldLevel = this.calculateLevel(GameState.stats.xp).level;
+        GameState.stats.xp += amount;
+        const newData = this.calculateLevel(GameState.stats.xp);
+        GameState.stats.level = newData.level;
+        
+        if (newData.level > oldLevel) {
+            showToast(`🎉 Level Up! You're now level ${newData.level}!`, 'success');
+            Achievements.check('level_up', newData.level);
+            
+            // Unlock themes at certain levels
+            if (newData.level >= 5 && !GameState.stats.unlockedThemes.includes('matrix')) {
+                GameState.stats.unlockedThemes.push('matrix');
+                showToast('🎨 New theme unlocked: Matrix!', 'info');
+            }
+            if (newData.level >= 10 && !GameState.stats.unlockedThemes.includes('ocean')) {
+                GameState.stats.unlockedThemes.push('ocean');
+                showToast('🎨 New theme unlocked: Ocean!', 'info');
+            }
+            if (newData.level >= 15 && !GameState.stats.unlockedThemes.includes('sunset')) {
+                GameState.stats.unlockedThemes.push('sunset');
+                showToast('🎨 New theme unlocked: Sunset!', 'info');
+            }
+            if (newData.level >= 20 && !GameState.stats.unlockedThemes.includes('royal')) {
+                GameState.stats.unlockedThemes.push('royal');
+                showToast('🎨 New theme unlocked: Royal!', 'info');
+            }
+            if (newData.level >= 25 && !GameState.stats.unlockedThemes.includes('hacker')) {
+                GameState.stats.unlockedThemes.push('hacker');
+                showToast('🎨 New theme unlocked: Hacker!', 'info');
+            }
+        }
+        
+        saveStats();
+        updateXPDisplay();
+        return newData;
+    }
+};
+
+// =========================================
+// Achievement System
+// =========================================
+const Achievements = {
+    definitions: [
+        // Beginner achievements
+        { id: 'first_crack', name: 'First Crack', description: 'Solve your first cipher', icon: '🔓', xp: 25 },
+        { id: 'streak_3', name: 'On a Roll', description: 'Get a 3-cipher streak', icon: '🔥', xp: 50 },
+        { id: 'streak_5', name: 'Unstoppable', description: 'Get a 5-cipher streak', icon: '⚡', xp: 100 },
+        { id: 'streak_10', name: 'Legendary Streak', description: 'Get a 10-cipher streak', icon: '💎', xp: 250 },
+        
+        // Level completion
+        { id: 'complete_rookie', name: 'Rookie Complete', description: 'Complete Level 1', icon: '🥉', xp: 50 },
+        { id: 'complete_initiate', name: 'Initiate Complete', description: 'Complete Level 2', icon: '🥈', xp: 75 },
+        { id: 'complete_hacker', name: 'Hacker Complete', description: 'Complete Level 3', icon: '🥇', xp: 100 },
+        { id: 'complete_expert', name: 'Expert Complete', description: 'Complete Level 4', icon: '🏆', xp: 150 },
+        { id: 'complete_master', name: 'Master Complete', description: 'Complete Level 5', icon: '👑', xp: 250 },
+        { id: 'complete_legendary', name: 'Legendary Complete', description: 'Complete Level 6', icon: '⭐', xp: 500 },
+        
+        // Cipher mastery
+        { id: 'solve_10', name: 'Cipher Apprentice', description: 'Solve 10 ciphers total', icon: '📚', xp: 50 },
+        { id: 'solve_50', name: 'Cipher Adept', description: 'Solve 50 ciphers total', icon: '🎓', xp: 150 },
+        { id: 'solve_100', name: 'Cipher Expert', description: 'Solve 100 ciphers total', icon: '🧙', xp: 300 },
+        { id: 'solve_500', name: 'Cipher Master', description: 'Solve 500 ciphers total', icon: '🌟', xp: 750 },
+        
+        // Speed achievements
+        { id: 'speed_demon', name: 'Speed Demon', description: 'Solve a cipher in under 10 seconds', icon: '⏱️', xp: 100 },
+        { id: 'lightning', name: 'Lightning Fast', description: 'Solve a cipher in under 5 seconds', icon: '⚡', xp: 200 },
+        
+        // No hints
+        { id: 'no_hints', name: 'Pure Skill', description: 'Solve 5 ciphers without hints', icon: '🧠', xp: 100 },
+        { id: 'no_hints_10', name: 'Mental Giant', description: 'Solve 10 ciphers without hints', icon: '🏛️', xp: 200 },
+        
+        // Daily streaks
+        { id: 'daily_3', name: 'Consistent', description: 'Play 3 days in a row', icon: '📅', xp: 75 },
+        { id: 'daily_7', name: 'Weekly Warrior', description: 'Play 7 days in a row', icon: '🗓️', xp: 150 },
+        { id: 'daily_30', name: 'Monthly Master', description: 'Play 30 days in a row', icon: '📆', xp: 500 },
+        
+        // Endless mode
+        { id: 'endless_10', name: 'Endless Explorer', description: 'Reach round 10 in Endless mode', icon: '♾️', xp: 100 },
+        { id: 'endless_25', name: 'Endless Warrior', description: 'Reach round 25 in Endless mode', icon: '🏃', xp: 250 },
+        { id: 'endless_50', name: 'Endless Legend', description: 'Reach round 50 in Endless mode', icon: '🦸', xp: 500 },
+        
+        // Level up achievements
+        { id: 'level_5', name: 'Rising Star', description: 'Reach player level 5', icon: '⬆️', xp: 100 },
+        { id: 'level_10', name: 'Veteran', description: 'Reach player level 10', icon: '🌟', xp: 200 },
+        { id: 'level_25', name: 'Elite', description: 'Reach player level 25', icon: '💫', xp: 500 }
+    ],
+    
+    check(type, value) {
+        const earned = [];
+        
+        switch(type) {
+            case 'cipher_solved':
+                if (!this.hasAchievement('first_crack')) {
+                    earned.push('first_crack');
+                }
+                if (GameState.stats.totalCiphersSolved >= 10 && !this.hasAchievement('solve_10')) {
+                    earned.push('solve_10');
+                }
+                if (GameState.stats.totalCiphersSolved >= 50 && !this.hasAchievement('solve_50')) {
+                    earned.push('solve_50');
+                }
+                if (GameState.stats.totalCiphersSolved >= 100 && !this.hasAchievement('solve_100')) {
+                    earned.push('solve_100');
+                }
+                if (GameState.stats.totalCiphersSolved >= 500 && !this.hasAchievement('solve_500')) {
+                    earned.push('solve_500');
+                }
+                break;
+                
+            case 'streak':
+                if (value >= 3 && !this.hasAchievement('streak_3')) {
+                    earned.push('streak_3');
+                }
+                if (value >= 5 && !this.hasAchievement('streak_5')) {
+                    earned.push('streak_5');
+                }
+                if (value >= 10 && !this.hasAchievement('streak_10')) {
+                    earned.push('streak_10');
+                }
+                break;
+                
+            case 'level_complete':
+                const levelAchievements = {
+                    1: 'complete_rookie',
+                    2: 'complete_initiate',
+                    3: 'complete_hacker',
+                    4: 'complete_expert',
+                    5: 'complete_master',
+                    6: 'complete_legendary'
+                };
+                if (levelAchievements[value] && !this.hasAchievement(levelAchievements[value])) {
+                    earned.push(levelAchievements[value]);
+                }
+                break;
+                
+            case 'speed':
+                if (value < 10 && !this.hasAchievement('speed_demon')) {
+                    earned.push('speed_demon');
+                }
+                if (value < 5 && !this.hasAchievement('lightning')) {
+                    earned.push('lightning');
+                }
+                break;
+                
+            case 'daily_streak':
+                if (value >= 3 && !this.hasAchievement('daily_3')) {
+                    earned.push('daily_3');
+                }
+                if (value >= 7 && !this.hasAchievement('daily_7')) {
+                    earned.push('daily_7');
+                }
+                if (value >= 30 && !this.hasAchievement('daily_30')) {
+                    earned.push('daily_30');
+                }
+                break;
+                
+            case 'endless_round':
+                if (value >= 10 && !this.hasAchievement('endless_10')) {
+                    earned.push('endless_10');
+                }
+                if (value >= 25 && !this.hasAchievement('endless_25')) {
+                    earned.push('endless_25');
+                }
+                if (value >= 50 && !this.hasAchievement('endless_50')) {
+                    earned.push('endless_50');
+                }
+                break;
+                
+            case 'level_up':
+                if (value >= 5 && !this.hasAchievement('level_5')) {
+                    earned.push('level_5');
+                }
+                if (value >= 10 && !this.hasAchievement('level_10')) {
+                    earned.push('level_10');
+                }
+                if (value >= 25 && !this.hasAchievement('level_25')) {
+                    earned.push('level_25');
+                }
+                break;
+        }
+        
+        earned.forEach(id => this.award(id));
+        return earned;
+    },
+    
+    hasAchievement(id) {
+        return GameState.stats.achievements.includes(id);
+    },
+    
+    award(id) {
+        if (this.hasAchievement(id)) return;
+        
+        const achievement = this.definitions.find(a => a.id === id);
+        if (!achievement) return;
+        
+        GameState.stats.achievements.push(id);
+        XPSystem.awardXP(achievement.xp);
+        
+        showToast(`🏆 Achievement: ${achievement.name}!`, 'success');
+        console.log(`Achievement unlocked: ${achievement.name}`);
+        
+        saveStats();
+    },
+    
+    getAll() {
+        return this.definitions.map(def => ({
+            ...def,
+            unlocked: this.hasAchievement(def.id)
+        }));
+    }
+};
+
+// =========================================
+// Theme System
+// =========================================
+const Themes = {
+    definitions: {
+        cyber: {
+            name: 'Cyber',
+            description: 'Default cyberpunk theme',
+            colors: {
+                primary: '#00d9ff',
+                secondary: '#ff00ff',
+                success: '#00ff88',
+                danger: '#ff4757',
+                gold: '#ffd700',
+                bgPrimary: '#0a0a1a',
+                bgSecondary: '#12122a',
+                bgTertiary: '#1a1a3a'
+            }
+        },
+        matrix: {
+            name: 'Matrix',
+            description: 'Green terminal aesthetic',
+            colors: {
+                primary: '#00ff00',
+                secondary: '#00cc00',
+                success: '#00ff00',
+                danger: '#ff0000',
+                gold: '#ffff00',
+                bgPrimary: '#000000',
+                bgSecondary: '#001100',
+                bgTertiary: '#002200'
+            }
+        },
+        ocean: {
+            name: 'Ocean',
+            description: 'Deep sea blue theme',
+            colors: {
+                primary: '#00bcd4',
+                secondary: '#0097a7',
+                success: '#4caf50',
+                danger: '#f44336',
+                gold: '#ffc107',
+                bgPrimary: '#0d1421',
+                bgSecondary: '#1a2735',
+                bgTertiary: '#243447'
+            }
+        },
+        sunset: {
+            name: 'Sunset',
+            description: 'Warm orange and purple',
+            colors: {
+                primary: '#ff6b35',
+                secondary: '#9c27b0',
+                success: '#4caf50',
+                danger: '#f44336',
+                gold: '#ffc107',
+                bgPrimary: '#1a0a1e',
+                bgSecondary: '#2d1233',
+                bgTertiary: '#3d1a45'
+            }
+        },
+        royal: {
+            name: 'Royal',
+            description: 'Elegant purple and gold',
+            colors: {
+                primary: '#9c27b0',
+                secondary: '#ffd700',
+                success: '#4caf50',
+                danger: '#f44336',
+                gold: '#ffd700',
+                bgPrimary: '#0f0a15',
+                bgSecondary: '#1a1025',
+                bgTertiary: '#251535'
+            }
+        },
+        hacker: {
+            name: 'Hacker',
+            description: 'Red and black elite',
+            colors: {
+                primary: '#ff0040',
+                secondary: '#00ff88',
+                success: '#00ff88',
+                danger: '#ff0040',
+                gold: '#ffd700',
+                bgPrimary: '#0a0000',
+                bgSecondary: '#150505',
+                bgTertiary: '#200a0a'
+            }
+        }
+    },
+    
+    apply(themeName) {
+        const theme = this.definitions[themeName];
+        if (!theme) return;
+        
+        const root = document.documentElement;
+        root.style.setProperty('--accent-primary', theme.colors.primary);
+        root.style.setProperty('--accent-secondary', theme.colors.secondary);
+        root.style.setProperty('--success', theme.colors.success);
+        root.style.setProperty('--danger', theme.colors.danger);
+        root.style.setProperty('--accent-gold', theme.colors.gold);
+        root.style.setProperty('--bg-primary', theme.colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', theme.colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', theme.colors.bgTertiary);
+        
+        GameState.currentTheme = themeName;
+        localStorage.setItem('cycrack_theme', themeName);
+    },
+    
+    getUnlocked() {
+        return Object.keys(this.definitions).filter(key => 
+            GameState.stats.unlockedThemes.includes(key)
+        ).map(key => ({
+            id: key,
+            ...this.definitions[key]
+        }));
+    }
+};
+
+// =========================================
+// Daily Streak System
+// =========================================
+const DailyStreak = {
+    check() {
+        const today = new Date().toDateString();
+        const lastPlay = GameState.stats.lastPlayDate;
+        
+        if (!lastPlay) {
+            // First time playing
+            GameState.stats.dailyStreak = 1;
+            GameState.stats.lastPlayDate = today;
+            saveStats();
+            return;
+        }
+        
+        if (lastPlay === today) {
+            // Already played today
+            return;
+        }
+        
+        const lastDate = new Date(lastPlay);
+        const todayDate = new Date(today);
+        const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            // Consecutive day!
+            GameState.stats.dailyStreak++;
+            showToast(`🔥 ${GameState.stats.dailyStreak} day streak!`, 'success');
+            Achievements.check('daily_streak', GameState.stats.dailyStreak);
+            
+            // Bonus XP for streaks
+            const bonusXP = Math.min(GameState.stats.dailyStreak * 10, 100);
+            XPSystem.awardXP(bonusXP);
+        } else if (diffDays > 1) {
+            // Streak broken
+            if (GameState.stats.dailyStreak > 1) {
+                showToast(`💔 Streak reset! You had a ${GameState.stats.dailyStreak} day streak.`, 'error');
+            }
+            GameState.stats.dailyStreak = 1;
+        }
+        
+        GameState.stats.lastPlayDate = today;
+        saveStats();
+    },
+    
+    getStreakBonus() {
+        return 1 + (GameState.stats.dailyStreak * 0.01); // 1% per day up to max
     }
 };
 
@@ -984,6 +1419,8 @@ function startGame(levelId = 1) {
     GameState.challengeNumber = 0;
     GameState.totalScore = 0;
     GameState.streak = 0;
+    GameState.isEndlessMode = false;
+    GameState.endlessRound = 0;
     
     // Initialize game seed for random word generation
     Levels.initializeGameSeed();
@@ -1001,6 +1438,10 @@ function startGame(levelId = 1) {
     GameState.totalChallenges = level ? level.challengesPerLevel : 5;
     
     GameState.stats.totalGamesPlayed++;
+    
+    // Check daily streak
+    DailyStreak.check();
+    
     saveStats();
     
     // Clear notepad content when starting a new level
@@ -1010,7 +1451,215 @@ function startGame(levelId = 1) {
     }
     
     updateHeaderStats();
+    updateXPDisplay();
     nextChallenge();
+}
+
+// =========================================
+// Endless Mode
+// =========================================
+function startEndlessMode() {
+    GameState.isEndlessMode = true;
+    GameState.endlessRound = 0;
+    GameState.challengeNumber = 0;
+    GameState.totalScore = 0;
+    GameState.streak = 0;
+    GameState.currentLevel = 0; // Special level for endless
+    
+    Levels.initializeGameSeed();
+    
+    GameState.levelStats = {
+        startTime: Date.now(),
+        correctAnswers: 0,
+        totalAttempts: 0,
+        fastestTime: Infinity,
+        totalScore: 0
+    };
+    
+    GameState.totalChallenges = Infinity;
+    GameState.stats.totalGamesPlayed++;
+    
+    DailyStreak.check();
+    saveStats();
+    
+    GameState.notepadContent = '';
+    if (DOM.notepadTextarea) {
+        DOM.notepadTextarea.value = '';
+    }
+    
+    updateHeaderStats();
+    updateXPDisplay();
+    nextEndlessChallenge();
+}
+
+function nextEndlessChallenge() {
+    GameState.endlessRound++;
+    GameState.challengeNumber = GameState.endlessRound;
+    
+    // Generate random challenge from all ciphers
+    const allCiphers = Levels.endlessMode.allCiphers;
+    const randomCipher = allCiphers[Math.floor(Math.random() * allCiphers.length)];
+    
+    // Word length increases slightly with rounds
+    const baseLength = Levels.wordLengths.endless;
+    const extraLength = Math.floor(GameState.endlessRound / 10);
+    const wordLength = Math.min(baseLength + extraLength, 15);
+    
+    const word = generateEndlessWord(wordLength);
+    const cipher = Ciphers[randomCipher];
+    
+    if (!cipher) {
+        console.error('Cipher not found:', randomCipher);
+        return;
+    }
+    
+    // Get cipher parameters
+    let cipherParams = {};
+    let encrypted = cipher.encode(word);
+    
+    if (randomCipher === 'caesar') {
+        const shift = Math.floor(Math.random() * 25) + 1;
+        encrypted = cipher.encode(word, shift);
+        cipherParams = { shift };
+    } else if (randomCipher === 'vigenere' || randomCipher === 'beaufort') {
+        const keywords = ['KEY', 'CODE', 'HACK', 'CYBER', 'LOCK'];
+        const keyword = keywords[Math.floor(Math.random() * keywords.length)];
+        encrypted = cipher.encode(word, keyword);
+        cipherParams = { keyword };
+    }
+    
+    GameState.currentChallenge = {
+        original: word,
+        encrypted: encrypted,
+        cipherName: randomCipher,
+        cipherParams: cipherParams,
+        level: 0,
+        maxAttempts: 999
+    };
+    
+    GameState.timeElapsed = 0;
+    GameState.hintsUsed = 0;
+    GameState.hintMultiplier = 1.0;
+    GameState.guesses = [];
+    GameState.startTime = Date.now();
+    GameState.isPaused = false;
+    
+    resetGameUIElements();
+    showScreen('game-screen');
+    displayEndlessChallenge();
+    resetCipherPanel();
+    updateEndlessProgress();
+    updateTimer();
+    updateScoreDisplay();
+    updateHintButtons();
+    
+    if (GameState.endlessRound === 1) {
+        if (DOM.notepadPanel) {
+            DOM.notepadPanel.classList.add('hidden');
+        }
+        const gameLayout = document.querySelector('.game-layout-3col');
+        if (gameLayout) {
+            gameLayout.classList.add('notepad-hidden');
+        }
+    }
+    
+    DOM.guessInput.value = '';
+    DOM.inputFeedback.textContent = '';
+    DOM.guessInput.focus();
+    startTimer();
+}
+
+function generateEndlessWord(length) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let word = '';
+    for (let i = 0; i < length; i++) {
+        word += alphabet[Math.floor(Math.random() * 26)];
+    }
+    return word;
+}
+
+function displayEndlessChallenge() {
+    const challenge = GameState.currentChallenge;
+    if (!challenge) return;
+    
+    DOM.encryptedText.textContent = challenge.encrypted;
+    showCipherNameUpfront();
+    loadNotepadContent();
+}
+
+function updateEndlessProgress() {
+    const progressFill = document.getElementById('progress-fill');
+    const challengeNum = document.getElementById('challenge-num');
+    const totalChallengesEl = document.getElementById('total-challenges');
+    
+    if (progressFill) {
+        // In endless mode, progress bar fills based on rounds (resets every 10)
+        const progress = ((GameState.endlessRound - 1) % 10) * 10;
+        progressFill.style.width = `${progress}%`;
+    }
+    
+    if (challengeNum) {
+        challengeNum.textContent = GameState.endlessRound;
+    }
+    if (totalChallengesEl) {
+        totalChallengesEl.textContent = '∞';
+    }
+}
+
+function endEndlessMode(success) {
+    stopTimer();
+    
+    // Update high scores
+    if (GameState.endlessRound > GameState.stats.endlessHighRound) {
+        GameState.stats.endlessHighRound = GameState.endlessRound;
+        showToast(`🎉 New endless mode record: Round ${GameState.endlessRound}!`, 'success');
+    }
+    if (GameState.totalScore > GameState.stats.endlessHighScore) {
+        GameState.stats.endlessHighScore = GameState.totalScore;
+    }
+    
+    // Check achievements
+    Achievements.check('endless_round', GameState.endlessRound);
+    
+    saveStats();
+    
+    // Show game over screen
+    showEndlessGameOver();
+}
+
+function showEndlessGameOver() {
+    // Create a simple game over display using existing modal
+    DOM.resultIcon.textContent = '🏁';
+    DOM.resultTitle.textContent = 'Endless Mode Complete!';
+    DOM.resultMessage.textContent = `You reached round ${GameState.endlessRound} with ${GameState.totalScore.toLocaleString()} points!`;
+    DOM.resultPoints.textContent = GameState.totalScore.toLocaleString();
+    DOM.resultTime.textContent = 'N/A';
+    
+    DOM.nextChallengeBtn.innerHTML = 'Try Again <span class="btn-icon">→</span>';
+    
+    updateHeaderStats();
+    showScreen('result-screen');
+}
+
+// Update XP display
+function updateXPDisplay() {
+    const xpData = XPSystem.calculateLevel(GameState.stats.xp);
+    
+    // Update any XP-related UI elements
+    const xpDisplay = document.getElementById('xp-display');
+    const levelDisplay = document.getElementById('player-level');
+    const xpBar = document.getElementById('xp-bar-fill');
+    
+    if (xpDisplay) {
+        xpDisplay.textContent = `${xpData.currentXP}/${xpData.xpNeeded} XP`;
+    }
+    if (levelDisplay) {
+        levelDisplay.textContent = `Lv.${xpData.level}`;
+    }
+    if (xpBar) {
+        const percent = (xpData.currentXP / xpData.xpNeeded) * 100;
+        xpBar.style.width = `${percent}%`;
+    }
 }
 
 function nextChallenge() {
@@ -1131,10 +1780,15 @@ function handleCorrectGuess() {
     GameState.levelStats.fastestTime = Math.min(GameState.levelStats.fastestTime, timeTaken);
     
     // Update progress bar immediately to show completion
-    updateProgress(GameState.challengeNumber);
+    if (!GameState.isEndlessMode) {
+        updateProgress(GameState.challengeNumber);
+    } else {
+        updateEndlessProgress();
+    }
     
     // Update stats
     GameState.stats.passwordsCracked++;
+    GameState.stats.totalCiphersSolved++;
     GameState.stats.highestScore = Math.max(GameState.stats.highestScore, GameState.totalScore);
     GameState.stats.bestStreak = Math.max(GameState.stats.bestStreak, GameState.streak);
     GameState.stats.totalTimePlayed += timeTaken;
@@ -1147,8 +1801,37 @@ function handleCorrectGuess() {
     GameState.stats.cipherStats[cipherName].solved++;
     GameState.stats.cipherStats[cipherName].attempts++;
     
+    // Award XP based on level and performance
+    const level = Levels.getLevel(GameState.currentLevel);
+    let xpEarned = level ? level.xpReward : Levels.endlessMode.xpPerSolve;
+    
+    // Bonus XP for no hints
+    if (GameState.hintsUsed === 0) {
+        xpEarned = Math.floor(xpEarned * 1.5);
+    }
+    
+    // Bonus XP for speed
+    if (timeTaken < 10) {
+        xpEarned = Math.floor(xpEarned * 1.25);
+    }
+    
+    // Streak bonus
+    xpEarned = Math.floor(xpEarned * DailyStreak.getStreakBonus());
+    
+    XPSystem.awardXP(xpEarned);
+    
+    // Check achievements
+    Achievements.check('cipher_solved');
+    Achievements.check('streak', GameState.streak);
+    Achievements.check('speed', timeTaken);
+    
+    if (GameState.isEndlessMode) {
+        Achievements.check('endless_round', GameState.endlessRound);
+    }
+    
     saveStats();
     updateHeaderStats();
+    updateXPDisplay();
     
     // Save notepad content
     saveNotepadContent();
@@ -1156,7 +1839,25 @@ function handleCorrectGuess() {
     // Celebration
     Confetti.start(2000);
     
-    endChallenge(true);
+    // Handle differently for endless mode
+    if (GameState.isEndlessMode) {
+        showEndlessRoundComplete();
+    } else {
+        endChallenge(true);
+    }
+}
+
+function showEndlessRoundComplete() {
+    DOM.resultIcon.textContent = '✅';
+    DOM.resultTitle.textContent = `Round ${GameState.endlessRound} Complete!`;
+    DOM.resultMessage.textContent = `Total Score: ${GameState.totalScore.toLocaleString()} | Streak: ${GameState.streak}`;
+    DOM.resultPoints.textContent = `+${GameState.roundScore}`;
+    DOM.resultTime.textContent = formatTime(GameState.timeElapsed);
+    
+    DOM.nextChallengeBtn.innerHTML = 'Next Round <span class="btn-icon">→</span>';
+    
+    updateHeaderStats();
+    showScreen('result-screen');
 }
 
 function handleWrongGuess(guess) {
@@ -1250,11 +1951,15 @@ function showLevelComplete() {
     if (stats.correctAnswers >= requiredChallenges && GameState.currentLevel >= GameState.stats.highestLevel) {
         GameState.stats.highestLevel = GameState.currentLevel + 1;
         console.log(`🔓 Level ${GameState.currentLevel + 1} unlocked! (Completed ${stats.correctAnswers}/${GameState.totalChallenges} challenges)`);
+        
+        // Check level completion achievement
+        Achievements.check('level_complete', GameState.currentLevel);
     } else {
         console.log(`⚠️ Need ${requiredChallenges} challenges to unlock next level (Completed: ${stats.correctAnswers})`);
     }
     
     saveStats();
+    updateXPDisplay();
     
     // Big celebration!
     Confetti.start(4000);
@@ -1420,7 +2125,9 @@ function initEventListeners() {
     
     // Result screen
     DOM.nextChallengeBtn.addEventListener('click', () => {
-        if (GameState.challengeNumber >= GameState.totalChallenges) {
+        if (GameState.isEndlessMode) {
+            nextEndlessChallenge();
+        } else if (GameState.challengeNumber >= GameState.totalChallenges) {
             showLevelComplete();
         } else {
             nextChallenge();
@@ -1430,13 +2137,43 @@ function initEventListeners() {
     // Result screen - Enter key
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && DOM.resultScreen.classList.contains('active')) {
-            if (GameState.challengeNumber >= GameState.totalChallenges) {
+            if (GameState.isEndlessMode) {
+                nextEndlessChallenge();
+            } else if (GameState.challengeNumber >= GameState.totalChallenges) {
                 showLevelComplete();
             } else {
                 nextChallenge();
             }
         }
     });
+    
+    // Endless mode button
+    const endlessBtn = document.getElementById('endless-mode-btn');
+    if (endlessBtn) {
+        endlessBtn.addEventListener('click', startEndlessMode);
+    }
+    
+    // Theme selector
+    const themeButtons = document.querySelectorAll('.theme-btn');
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const themeName = btn.dataset.theme;
+            if (GameState.stats.unlockedThemes.includes(themeName)) {
+                Themes.apply(themeName);
+                updateThemeButtons();
+            } else {
+                showToast('🔒 This theme is locked!', 'error');
+            }
+        });
+    });
+    
+    // Achievements button
+    const achievementsBtn = document.getElementById('view-achievements-btn');
+    if (achievementsBtn) {
+        achievementsBtn.addEventListener('click', () => {
+            showAchievementsModal();
+        });
+    }
     
     DOM.backToMenuBtn.addEventListener('click', () => {
         stopTimer();
@@ -1498,6 +2235,30 @@ function initEventListeners() {
     DOM.closeStats.addEventListener('click', () => {
         hideModal('stats-modal');
     });
+    
+    // Achievements modal
+    const closeAchievements = document.getElementById('close-achievements');
+    if (closeAchievements) {
+        closeAchievements.addEventListener('click', () => {
+            hideModal('achievements-modal');
+        });
+    }
+    
+    // Themes modal
+    const viewThemesBtn = document.getElementById('view-themes-btn');
+    if (viewThemesBtn) {
+        viewThemesBtn.addEventListener('click', () => {
+            updateThemeButtons();
+            showModal('themes-modal');
+        });
+    }
+    
+    const closeThemes = document.getElementById('close-themes');
+    if (closeThemes) {
+        closeThemes.addEventListener('click', () => {
+            hideModal('themes-modal');
+        });
+    }
     
     DOM.resetStatsBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset all your stats? This cannot be undone.')) {
@@ -1649,17 +2410,102 @@ function initEventListeners() {
 }
 
 // =========================================
+// Achievements Modal
+// =========================================
+function showAchievementsModal() {
+    const modal = document.getElementById('achievements-modal');
+    const list = document.getElementById('achievements-list');
+    
+    if (!modal || !list) {
+        showToast('Achievements feature coming soon!', 'info');
+        return;
+    }
+    
+    const achievements = Achievements.getAll();
+    const unlockedCount = achievements.filter(a => a.unlocked).length;
+    
+    list.innerHTML = achievements.map(achievement => `
+        <div class="achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}">
+            <span class="achievement-icon">${achievement.icon}</span>
+            <div class="achievement-info">
+                <strong>${achievement.name}</strong>
+                <span>${achievement.description}</span>
+            </div>
+            <span class="achievement-xp">${achievement.unlocked ? '✓' : `+${achievement.xp} XP`}</span>
+        </div>
+    `).join('');
+    
+    const header = modal.querySelector('.modal-header h2');
+    if (header) {
+        header.textContent = `🏆 Achievements (${unlockedCount}/${achievements.length})`;
+    }
+    
+    showModal('achievements-modal');
+}
+
+function updateThemeButtons() {
+    const buttons = document.querySelectorAll('.theme-btn');
+    buttons.forEach(btn => {
+        const themeName = btn.dataset.theme;
+        const isUnlocked = GameState.stats.unlockedThemes.includes(themeName);
+        const isActive = GameState.currentTheme === themeName;
+        
+        btn.classList.toggle('locked', !isUnlocked);
+        btn.classList.toggle('active', isActive);
+        
+        if (!isUnlocked) {
+            const reqLevel = themeName === 'matrix' ? 5 : 
+                            themeName === 'ocean' ? 10 : 
+                            themeName === 'sunset' ? 15 : 
+                            themeName === 'royal' ? 20 : 
+                            themeName === 'hacker' ? 25 : 1;
+            btn.title = `Unlock at Level ${reqLevel}`;
+        }
+    });
+}
+
+function updateDailyStreakDisplay() {
+    const streakDisplay = document.getElementById('daily-streak');
+    if (streakDisplay) {
+        streakDisplay.textContent = `🔥 ${GameState.stats.dailyStreak} day${GameState.stats.dailyStreak !== 1 ? 's' : ''}`;
+    }
+}
+
+// =========================================
 // Initialization
 // =========================================
 function init() {
     loadStats();
+    
+    // Ensure new stats fields exist
+    if (GameState.stats.xp === undefined) GameState.stats.xp = 0;
+    if (GameState.stats.level === undefined) GameState.stats.level = 1;
+    if (GameState.stats.dailyStreak === undefined) GameState.stats.dailyStreak = 0;
+    if (GameState.stats.achievements === undefined) GameState.stats.achievements = [];
+    if (GameState.stats.unlockedThemes === undefined) GameState.stats.unlockedThemes = ['cyber'];
+    if (GameState.stats.totalCiphersSolved === undefined) GameState.stats.totalCiphersSolved = GameState.stats.passwordsCracked || 0;
+    if (GameState.stats.endlessHighScore === undefined) GameState.stats.endlessHighScore = 0;
+    if (GameState.stats.endlessHighRound === undefined) GameState.stats.endlessHighRound = 0;
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('cycrack_theme') || 'cyber';
+    if (GameState.stats.unlockedThemes.includes(savedTheme)) {
+        Themes.apply(savedTheme);
+    }
+    
     updateLevelButtons();
     updateHeaderStats();
+    updateXPDisplay();
+    updateThemeButtons();
+    updateDailyStreakDisplay();
     initEventListeners();
     Confetti.init();
     
     console.log('🔐 CyCrack initialized!');
     console.log('📊 Stats loaded:', GameState.stats);
+    console.log(`🎮 Player Level: ${XPSystem.calculateLevel(GameState.stats.xp).level}`);
+    console.log(`🔥 Daily Streak: ${GameState.stats.dailyStreak}`);
+    console.log(`🏆 Achievements: ${GameState.stats.achievements.length}/${Achievements.definitions.length}`);
     console.log('🐍 Initializing Python runtime...');
 }
 

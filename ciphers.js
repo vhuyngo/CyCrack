@@ -1299,6 +1299,1004 @@ for char in unvig:
 
 print("Decoded:", decoded)`;
         }
+    },
+
+    // =========================================
+    // ADDITIONAL CIPHERS - Mixed Levels
+    // =========================================
+
+    /**
+     * Pig Latin (Level 1 - Rookie)
+     * Move first consonant cluster to end and add "ay"
+     */
+    pigLatin: {
+        name: 'Pig Latin',
+        difficulty: 'easy',
+        description: 'A playful language game where the first consonant(s) move to the end with "AY" added. Words starting with vowels just get "YAY" at the end.',
+        
+        encode(text) {
+            return text.toUpperCase().split('').map((char, i, arr) => {
+                // For single letters, just add AY
+                if ('AEIOU'.includes(char)) {
+                    return char + 'YAY';
+                } else {
+                    return char + 'AY';
+                }
+            }).join('-');
+        },
+        
+        decode(text) {
+            return text.split('-').map(part => {
+                if (part.endsWith('YAY')) {
+                    return part.slice(0, -3);
+                } else if (part.endsWith('AY')) {
+                    return part.slice(0, -2);
+                }
+                return part;
+            }).join('');
+        },
+        
+        getHint() {
+            return 'Remove "AY" or "YAY" suffix from each part';
+        },
+
+        getExample(firstLetter) {
+            const isVowel = 'AEIOU'.includes(firstLetter);
+            const encoded = isVowel ? firstLetter + 'YAY' : firstLetter + 'AY';
+            return {
+                visual: `Encryption: ${firstLetter} → ${encoded}\nDecryption: ${encoded} → ${firstLetter}\nRule: Remove AY/YAY suffix`,
+                text: `${firstLetter} → ${encoded}`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# Pig Latin Cipher Decoder
+# Each letter has "AY" or "YAY" suffix
+
+encrypted = "${encrypted}"
+
+# TODO: Split by '-' and remove the suffix from each part
+decoded = ""
+for part in encrypted.split('-'):
+    if part.endswith('YAY'):
+        # Vowel - remove YAY
+        decoded += part[:-3]
+    elif part.endswith('AY'):
+        # Consonant - remove AY
+        decoded += part[:-2]
+    else:
+        decoded += part
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * ROT5 (Numbers) - Level 1
+     * Rotate digits by 5
+     */
+    rot5: {
+        name: 'ROT5',
+        difficulty: 'easy',
+        description: 'Each letter is converted to its numeric position, then the digit is shifted by 5. Like ROT13 but for the alphabet positions.',
+        
+        encode(text) {
+            return text.toUpperCase().split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const pos = Ciphers.letterIndex(char) + 1; // 1-26
+                // Shift each digit by 5
+                return pos.toString().split('').map(d => ((parseInt(d) + 5) % 10).toString()).join('');
+            }).join('-');
+        },
+        
+        decode(text) {
+            return text.split('-').map(part => {
+                // Shift each digit back by 5
+                const original = part.split('').map(d => {
+                    if (/\d/.test(d)) {
+                        return ((parseInt(d) - 5 + 10) % 10).toString();
+                    }
+                    return d;
+                }).join('');
+                const num = parseInt(original);
+                if (num >= 1 && num <= 26) {
+                    return Ciphers.indexToLetter(num - 1);
+                }
+                return part;
+            }).join('');
+        },
+        
+        getHint() {
+            return 'Each digit is shifted by 5, then convert number to letter';
+        },
+
+        getExample(firstLetter) {
+            const pos = Ciphers.letterIndex(firstLetter) + 1;
+            const shifted = pos.toString().split('').map(d => ((parseInt(d) + 5) % 10).toString()).join('');
+            return {
+                visual: `Encryption: ${firstLetter} → ${pos} → ${shifted} (digits +5)\nDecryption: ${shifted} → ${pos} → ${firstLetter}`,
+                text: `${firstLetter} → ${shifted}`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# ROT5 Cipher Decoder
+# Each digit was shifted by 5, result represents letter position
+
+encrypted = "${encrypted}"
+
+# TODO: Shift each digit back by 5, then convert to letter
+decoded = ""
+for part in encrypted.split('-'):
+    # Shift each digit back by 5
+    original_num = ""
+    for d in part:
+        if d.isdigit():
+            original_num += str((int(d) - 5) % 10)
+        else:
+            original_num += d
+    
+    # Convert number to letter (1=A, 2=B, etc.)
+    num = int(original_num)
+    if 1 <= num <= 26:
+        decoded += chr(num - 1 + ord('A'))
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Keyword Cipher - Level 2
+     * Substitution using a keyword to create alphabet
+     */
+    keyword: {
+        name: 'Keyword Cipher',
+        difficulty: 'medium',
+        description: 'A substitution cipher where the cipher alphabet starts with a keyword (duplicates removed), followed by remaining letters.',
+        key: 'KRYPTOS',
+        
+        generateAlphabet(keyword) {
+            const key = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+            const seen = new Set();
+            let alphabet = '';
+            
+            // Add keyword letters (no duplicates)
+            for (const char of key) {
+                if (!seen.has(char)) {
+                    seen.add(char);
+                    alphabet += char;
+                }
+            }
+            
+            // Add remaining letters
+            for (let i = 0; i < 26; i++) {
+                const char = String.fromCharCode(65 + i);
+                if (!seen.has(char)) {
+                    alphabet += char;
+                }
+            }
+            
+            return alphabet;
+        },
+        
+        encode(text, keyword = this.key) {
+            const cipherAlphabet = this.generateAlphabet(keyword);
+            return text.split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const isUpper = char === char.toUpperCase();
+                const index = Ciphers.letterIndex(char);
+                const encoded = cipherAlphabet[index];
+                return isUpper ? encoded : encoded.toLowerCase();
+            }).join('');
+        },
+        
+        decode(text, keyword = this.key) {
+            const cipherAlphabet = this.generateAlphabet(keyword);
+            return text.split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const isUpper = char === char.toUpperCase();
+                const index = cipherAlphabet.indexOf(char.toUpperCase());
+                return Ciphers.indexToLetter(index, true, isUpper);
+            }).join('');
+        },
+        
+        getHint(keyword = this.key) {
+            const alphabet = this.generateAlphabet(keyword);
+            return `Keyword: "${keyword}" → ${alphabet.substring(0, 10)}...`;
+        },
+
+        getExample(firstLetter, keyword = this.key) {
+            const cipherAlphabet = this.generateAlphabet(keyword);
+            const index = Ciphers.letterIndex(firstLetter);
+            const encoded = cipherAlphabet[index];
+            return {
+                visual: `Encryption: ${firstLetter} (pos ${index+1}) → ${encoded}\nDecryption: Find ${encoded} in cipher alphabet → ${firstLetter}\nKeyword: "${keyword}"`,
+                text: `${firstLetter} → ${encoded}`
+            };
+        },
+
+        getPythonCode(encrypted, keyword = this.key) {
+            return `# Keyword Cipher Decoder
+# Cipher alphabet starts with keyword, then remaining letters
+
+encrypted = "${encrypted}"
+keyword = "${keyword}"
+
+# Build the cipher alphabet
+def build_cipher_alphabet(kw):
+    seen = set()
+    alphabet = ""
+    for c in kw.upper():
+        if c.isalpha() and c not in seen:
+            seen.add(c)
+            alphabet += c
+    for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        if c not in seen:
+            alphabet += c
+    return alphabet
+
+cipher_alphabet = build_cipher_alphabet(keyword)
+plain_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# TODO: Find each letter in cipher alphabet, use position in plain alphabet
+decoded = ""
+for char in encrypted:
+    if char.isalpha():
+        pos = cipher_alphabet.index(char.upper())
+        decoded += plain_alphabet[pos]
+    else:
+        decoded += char
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Beaufort Cipher - Level 2
+     * Similar to Vigenère but subtracts plaintext from key
+     */
+    beaufort: {
+        name: 'Beaufort Cipher',
+        difficulty: 'medium',
+        description: 'Similar to Vigenère, but instead of adding, it subtracts the plaintext from the keyword. It\'s reciprocal - encoding and decoding use the same operation.',
+        keyword: 'CIPHER',
+        
+        encode(text, keyword = this.keyword) {
+            let keyIndex = 0;
+            const key = keyword.toUpperCase();
+            
+            return text.split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const isUpper = char === char.toUpperCase();
+                const textIndex = Ciphers.letterIndex(char);
+                const keyChar = key[keyIndex % key.length];
+                const keyVal = Ciphers.letterIndex(keyChar);
+                // Beaufort: key - plaintext
+                const newIndex = (keyVal - textIndex + 26) % 26;
+                keyIndex++;
+                return Ciphers.indexToLetter(newIndex, true, isUpper);
+            }).join('');
+        },
+        
+        decode(text, keyword = this.keyword) {
+            // Beaufort is reciprocal - same operation for encode/decode
+            return this.encode(text, keyword);
+        },
+        
+        getHint(keyword = this.keyword) {
+            return `Keyword: "${keyword}" (reciprocal cipher)`;
+        },
+
+        getExample(firstLetter, keyword = this.keyword) {
+            const keyChar = keyword[0];
+            const keyVal = Ciphers.letterIndex(keyChar);
+            const textVal = Ciphers.letterIndex(firstLetter);
+            const result = (keyVal - textVal + 26) % 26;
+            const encoded = Ciphers.indexToLetter(result);
+            return {
+                visual: `Encryption: ${keyChar}(${keyVal}) - ${firstLetter}(${textVal}) = ${encoded}\nDecryption: Same operation (reciprocal)\nKeyword: "${keyword}"`,
+                text: `${firstLetter} → ${encoded}`
+            };
+        },
+
+        getPythonCode(encrypted, keyword = this.keyword) {
+            return `# Beaufort Cipher Decoder
+# Reciprocal cipher: key_letter - cipher_letter (same as encoding)
+
+encrypted = "${encrypted}"
+keyword = "${keyword}"
+
+# TODO: For each letter, subtract from keyword letter
+decoded = ""
+for i, char in enumerate(encrypted):
+    if char.isalpha():
+        key_char = keyword[i % len(keyword)]
+        key_val = ord(key_char) - ord('A')
+        text_val = ord(char) - ord('A')
+        # Beaufort: key - text (reciprocal)
+        new_val = (key_val - text_val) % 26
+        decoded += chr(new_val + ord('A'))
+    else:
+        decoded += char
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Playfair Cipher - Level 3
+     * Digraph substitution using 5x5 grid
+     */
+    playfair: {
+        name: 'Playfair Cipher',
+        difficulty: 'hard',
+        description: 'A digraph cipher using a 5×5 grid. Letter pairs are encrypted based on their positions in the grid. I and J share a cell.',
+        keyword: 'MONARCHY',
+        
+        generateGrid(keyword) {
+            const key = keyword.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            const seen = new Set();
+            let grid = '';
+            
+            for (const char of key) {
+                if (!seen.has(char)) {
+                    seen.add(char);
+                    grid += char;
+                }
+            }
+            
+            for (let i = 0; i < 26; i++) {
+                const char = String.fromCharCode(65 + i);
+                if (char !== 'J' && !seen.has(char)) {
+                    grid += char;
+                }
+            }
+            
+            return grid; // 25 characters for 5x5 grid
+        },
+        
+        findPosition(grid, char) {
+            const c = char === 'J' ? 'I' : char;
+            const index = grid.indexOf(c);
+            return { row: Math.floor(index / 5), col: index % 5 };
+        },
+        
+        encode(text, keyword = this.keyword) {
+            const grid = this.generateGrid(keyword);
+            const clean = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            
+            // Prepare digraphs (insert X between doubles, pad if odd)
+            let prepared = '';
+            for (let i = 0; i < clean.length; i++) {
+                prepared += clean[i];
+                if (i + 1 < clean.length && clean[i] === clean[i + 1]) {
+                    prepared += 'X';
+                }
+            }
+            if (prepared.length % 2 === 1) prepared += 'X';
+            
+            let result = '';
+            for (let i = 0; i < prepared.length; i += 2) {
+                const a = this.findPosition(grid, prepared[i]);
+                const b = this.findPosition(grid, prepared[i + 1]);
+                
+                if (a.row === b.row) {
+                    // Same row - shift right
+                    result += grid[a.row * 5 + (a.col + 1) % 5];
+                    result += grid[b.row * 5 + (b.col + 1) % 5];
+                } else if (a.col === b.col) {
+                    // Same column - shift down
+                    result += grid[((a.row + 1) % 5) * 5 + a.col];
+                    result += grid[((b.row + 1) % 5) * 5 + b.col];
+                } else {
+                    // Rectangle - swap columns
+                    result += grid[a.row * 5 + b.col];
+                    result += grid[b.row * 5 + a.col];
+                }
+            }
+            
+            return result;
+        },
+        
+        decode(text, keyword = this.keyword) {
+            const grid = this.generateGrid(keyword);
+            const clean = text.toUpperCase().replace(/[^A-Z]/g, '');
+            
+            let result = '';
+            for (let i = 0; i < clean.length; i += 2) {
+                const a = this.findPosition(grid, clean[i]);
+                const b = this.findPosition(grid, clean[i + 1]);
+                
+                if (a.row === b.row) {
+                    // Same row - shift left
+                    result += grid[a.row * 5 + (a.col + 4) % 5];
+                    result += grid[b.row * 5 + (b.col + 4) % 5];
+                } else if (a.col === b.col) {
+                    // Same column - shift up
+                    result += grid[((a.row + 4) % 5) * 5 + a.col];
+                    result += grid[((b.row + 4) % 5) * 5 + b.col];
+                } else {
+                    // Rectangle - swap columns
+                    result += grid[a.row * 5 + b.col];
+                    result += grid[b.row * 5 + a.col];
+                }
+            }
+            
+            // Remove padding X's
+            return result.replace(/X$/g, '');
+        },
+        
+        getHint(keyword = this.keyword) {
+            const grid = this.generateGrid(keyword);
+            return `5×5 Grid starts: ${grid.substring(0, 5)}...`;
+        },
+
+        getExample(firstLetter, keyword = this.keyword) {
+            const grid = this.generateGrid(keyword);
+            return {
+                visual: `Encryption: Letter pairs use 5×5 grid rules\nDecryption: Reverse grid operations\nKeyword: "${keyword}"\nGrid: ${grid.match(/.{5}/g).join(' | ')}`,
+                text: `Digraph cipher using grid positions`
+            };
+        },
+
+        getPythonCode(encrypted, keyword = this.keyword) {
+            const grid = this.generateGrid(keyword);
+            return `# Playfair Cipher Decoder
+# 5×5 grid cipher, processes letter pairs
+
+encrypted = "${encrypted}"
+grid = "${grid}"
+
+def find_pos(g, c):
+    c = 'I' if c == 'J' else c
+    idx = g.index(c)
+    return idx // 5, idx % 5
+
+def decode_pair(g, c1, c2):
+    r1, c1_col = find_pos(g, c1)
+    r2, c2_col = find_pos(g, c2)
+    
+    if r1 == r2:  # Same row - shift left
+        return g[r1*5 + (c1_col-1)%5] + g[r2*5 + (c2_col-1)%5]
+    elif c1_col == c2_col:  # Same column - shift up
+        return g[((r1-1)%5)*5 + c1_col] + g[((r2-1)%5)*5 + c2_col]
+    else:  # Rectangle - swap columns
+        return g[r1*5 + c2_col] + g[r2*5 + c1_col]
+
+# TODO: Process pairs and decode
+decoded = ""
+for i in range(0, len(encrypted), 2):
+    if i+1 < len(encrypted):
+        decoded += decode_pair(grid, encrypted[i], encrypted[i+1])
+
+print("Decoded:", decoded.rstrip('X'))`;
+        }
+    },
+
+    /**
+     * Polybius Square - Level 3
+     * Each letter represented by row/column coordinates
+     */
+    polybius: {
+        name: 'Polybius Square',
+        difficulty: 'medium',
+        description: 'Each letter is represented by its row and column number in a 5×5 grid. I and J share position 24.',
+        
+        grid: 'ABCDEFGHIKLMNOPQRSTUVWXYZ', // No J
+        
+        encode(text) {
+            return text.toUpperCase().split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const c = char === 'J' ? 'I' : char;
+                const index = this.grid.indexOf(c);
+                const row = Math.floor(index / 5) + 1;
+                const col = (index % 5) + 1;
+                return `${row}${col}`;
+            }).join(' ');
+        },
+        
+        decode(text) {
+            return text.split(' ').map(code => {
+                if (code.length !== 2) return code;
+                const row = parseInt(code[0]) - 1;
+                const col = parseInt(code[1]) - 1;
+                if (row >= 0 && row < 5 && col >= 0 && col < 5) {
+                    return this.grid[row * 5 + col];
+                }
+                return code;
+            }).join('');
+        },
+        
+        getHint() {
+            return 'Two-digit codes: first digit = row, second = column';
+        },
+
+        getExample(firstLetter) {
+            const c = firstLetter === 'J' ? 'I' : firstLetter;
+            const index = this.grid.indexOf(c);
+            const row = Math.floor(index / 5) + 1;
+            const col = (index % 5) + 1;
+            return {
+                visual: `Encryption: ${firstLetter} → ${row}${col} (row ${row}, col ${col})\nDecryption: ${row}${col} → ${firstLetter}\nGrid: ABCDE|FGHIK|LMNOP|QRSTU|VWXYZ`,
+                text: `${firstLetter} → ${row}${col}`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# Polybius Square Decoder
+# Each two-digit code = row + column in 5×5 grid
+
+encrypted = "${encrypted}"
+grid = "ABCDEFGHIKLMNOPQRSTUVWXYZ"  # No J
+
+# TODO: Convert each coordinate pair back to letter
+decoded = ""
+for code in encrypted.split(' '):
+    if len(code) == 2 and code.isdigit():
+        row = int(code[0]) - 1
+        col = int(code[1]) - 1
+        if 0 <= row < 5 and 0 <= col < 5:
+            decoded += grid[row * 5 + col]
+    else:
+        decoded += code
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Bifid Cipher - Level 4
+     * Combines Polybius square with fractionation
+     */
+    bifid: {
+        name: 'Bifid Cipher',
+        difficulty: 'hard',
+        description: 'Combines Polybius coordinates with fractionation: convert to row/col, concatenate all rows then all cols, then pair up to get new letters.',
+        grid: 'ABCDEFGHIKLMNOPQRSTUVWXYZ',
+        
+        encode(text) {
+            const clean = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            
+            // Get all row and column values
+            const rows = [];
+            const cols = [];
+            for (const char of clean) {
+                const index = this.grid.indexOf(char);
+                rows.push(Math.floor(index / 5));
+                cols.push(index % 5);
+            }
+            
+            // Concatenate: all rows, then all cols
+            const combined = [...rows, ...cols];
+            
+            // Pair up to get new coordinates
+            let result = '';
+            for (let i = 0; i < combined.length; i += 2) {
+                const row = combined[i];
+                const col = combined[i + 1];
+                result += this.grid[row * 5 + col];
+            }
+            
+            return result;
+        },
+        
+        decode(text) {
+            const clean = text.toUpperCase().replace(/[^A-Z]/g, '');
+            const len = clean.length;
+            
+            // Get coordinates of each cipher letter
+            const coords = [];
+            for (const char of clean) {
+                const index = this.grid.indexOf(char);
+                coords.push(Math.floor(index / 5));
+                coords.push(index % 5);
+            }
+            
+            // Split back into rows and cols
+            const rows = coords.slice(0, len);
+            const cols = coords.slice(len);
+            
+            // Reconstruct original letters
+            let result = '';
+            for (let i = 0; i < len; i++) {
+                result += this.grid[rows[i] * 5 + cols[i]];
+            }
+            
+            return result;
+        },
+        
+        getHint() {
+            return 'Polybius + fractionation: split coordinates, recombine';
+        },
+
+        getExample(firstLetter) {
+            const c = firstLetter === 'J' ? 'I' : firstLetter;
+            const index = this.grid.indexOf(c);
+            const row = Math.floor(index / 5);
+            const col = index % 5;
+            return {
+                visual: `Encryption: Get row/col for all letters, concatenate rows+cols, pair up\nDecryption: Reverse the fractionation process\n${firstLetter} → (${row},${col})`,
+                text: `Uses Polybius with fractionation`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# Bifid Cipher Decoder
+# Fractionated Polybius: coordinates are split and recombined
+
+encrypted = "${encrypted}"
+grid = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+def get_pos(c):
+    idx = grid.index(c if c != 'J' else 'I')
+    return idx // 5, idx % 5
+
+# Get all coordinates from cipher text
+coords = []
+for c in encrypted:
+    if c.isalpha():
+        r, c_val = get_pos(c)
+        coords.append(r)
+        coords.append(c_val)
+
+# Split into rows and cols halves
+n = len(encrypted)
+rows = coords[:n]
+cols = coords[n:]
+
+# Reconstruct original letters
+decoded = ""
+for i in range(n):
+    idx = rows[i] * 5 + cols[i]
+    decoded += grid[idx]
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * ADFGX Cipher - Level 4
+     * WWI cipher using 5×5 grid with letters ADFGX
+     */
+    adfgx: {
+        name: 'ADFGX Cipher',
+        difficulty: 'hard',
+        description: 'A WWI German cipher. Letters are encoded using a 5×5 Polybius square with ADFGX as coordinates, then a columnar transposition is applied.',
+        grid: 'BTALPDHOZKQFVSNGICUXMREWY', // Example mixed alphabet
+        labels: 'ADFGX',
+        keyword: 'CARGO',
+        
+        encode(text, keyword = this.keyword) {
+            const clean = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            
+            // Step 1: Polybius substitution with ADFGX
+            let substituted = '';
+            for (const char of clean) {
+                const index = this.grid.indexOf(char);
+                const row = this.labels[Math.floor(index / 5)];
+                const col = this.labels[index % 5];
+                substituted += row + col;
+            }
+            
+            // Step 2: Columnar transposition (simplified - just return substituted for now)
+            return substituted;
+        },
+        
+        decode(text, keyword = this.keyword) {
+            const clean = text.toUpperCase().replace(/[^ADFGX]/g, '');
+            
+            // Reverse Polybius substitution
+            let result = '';
+            for (let i = 0; i < clean.length; i += 2) {
+                const row = this.labels.indexOf(clean[i]);
+                const col = this.labels.indexOf(clean[i + 1]);
+                if (row >= 0 && col >= 0) {
+                    result += this.grid[row * 5 + col];
+                }
+            }
+            
+            return result;
+        },
+        
+        getHint() {
+            return 'ADFGX coordinates map to 5×5 grid positions';
+        },
+
+        getExample(firstLetter) {
+            const c = firstLetter === 'J' ? 'I' : firstLetter;
+            const index = this.grid.indexOf(c);
+            const row = this.labels[Math.floor(index / 5)];
+            const col = this.labels[index % 5];
+            return {
+                visual: `Encryption: ${firstLetter} → ${row}${col} (ADFGX coords)\nDecryption: ${row}${col} → ${firstLetter}\nLabels: A D F G X for rows and columns`,
+                text: `${firstLetter} → ${row}${col}`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# ADFGX Cipher Decoder
+# WWI cipher using ADFGX as Polybius coordinates
+
+encrypted = "${encrypted}"
+grid = "${this.grid}"
+labels = "ADFGX"
+
+# TODO: Convert each pair of ADFGX letters back to original
+decoded = ""
+clean = ''.join(c for c in encrypted.upper() if c in labels)
+
+for i in range(0, len(clean), 2):
+    if i+1 < len(clean):
+        row = labels.index(clean[i])
+        col = labels.index(clean[i+1])
+        decoded += grid[row * 5 + col]
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Four-Square Cipher - Level 5
+     * Uses four 5×5 grids
+     */
+    fourSquare: {
+        name: 'Four-Square Cipher',
+        difficulty: 'expert',
+        description: 'Uses four 5×5 grids arranged in a square. Plain letters use top-left and bottom-right, cipher letters come from top-right and bottom-left.',
+        keyword1: 'EXAMPLE',
+        keyword2: 'KEYWORD',
+        
+        generateGrid(keyword) {
+            const key = keyword.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            const seen = new Set();
+            let grid = '';
+            
+            for (const char of key) {
+                if (!seen.has(char)) {
+                    seen.add(char);
+                    grid += char;
+                }
+            }
+            
+            for (let i = 0; i < 26; i++) {
+                const char = String.fromCharCode(65 + i);
+                if (char !== 'J' && !seen.has(char)) {
+                    grid += char;
+                }
+            }
+            
+            return grid;
+        },
+        
+        plainGrid: 'ABCDEFGHIKLMNOPQRSTUVWXYZ',
+        
+        encode(text, kw1 = this.keyword1, kw2 = this.keyword2) {
+            const grid1 = this.generateGrid(kw1); // Top-right
+            const grid2 = this.generateGrid(kw2); // Bottom-left
+            const clean = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+            const padded = clean.length % 2 === 1 ? clean + 'X' : clean;
+            
+            let result = '';
+            for (let i = 0; i < padded.length; i += 2) {
+                const a = padded[i];
+                const b = padded[i + 1];
+                
+                const posA = this.plainGrid.indexOf(a);
+                const posB = this.plainGrid.indexOf(b);
+                
+                const rowA = Math.floor(posA / 5);
+                const colA = posA % 5;
+                const rowB = Math.floor(posB / 5);
+                const colB = posB % 5;
+                
+                // Top-right grid for first letter, bottom-left for second
+                result += grid1[rowA * 5 + colB];
+                result += grid2[rowB * 5 + colA];
+            }
+            
+            return result;
+        },
+        
+        decode(text, kw1 = this.keyword1, kw2 = this.keyword2) {
+            const grid1 = this.generateGrid(kw1);
+            const grid2 = this.generateGrid(kw2);
+            const clean = text.toUpperCase().replace(/[^A-Z]/g, '');
+            
+            let result = '';
+            for (let i = 0; i < clean.length; i += 2) {
+                const a = clean[i];
+                const b = clean[i + 1];
+                
+                const posA = grid1.indexOf(a);
+                const posB = grid2.indexOf(b);
+                
+                const rowA = Math.floor(posA / 5);
+                const colA = posA % 5;
+                const rowB = Math.floor(posB / 5);
+                const colB = posB % 5;
+                
+                // Reverse: use rows from cipher grids, cols swapped
+                result += this.plainGrid[rowA * 5 + colB];
+                result += this.plainGrid[rowB * 5 + colA];
+            }
+            
+            return result.replace(/X$/g, '');
+        },
+        
+        getHint(kw1 = this.keyword1, kw2 = this.keyword2) {
+            return `Keywords: "${kw1}", "${kw2}"`;
+        },
+
+        getExample(firstLetter, kw1 = this.keyword1, kw2 = this.keyword2) {
+            return {
+                visual: `Encryption: Use 4 grids in square pattern\nDecryption: Reverse grid lookups\nKeywords: "${kw1}", "${kw2}"`,
+                text: `Four 5×5 grids, digraph cipher`
+            };
+        },
+
+        getPythonCode(encrypted, kw1 = this.keyword1, kw2 = this.keyword2) {
+            return `# Four-Square Cipher Decoder
+# Uses four 5×5 grids for digraph encryption
+
+encrypted = "${encrypted}"
+
+def build_grid(keyword):
+    seen = set()
+    grid = ""
+    for c in keyword.upper().replace('J', 'I'):
+        if c.isalpha() and c not in seen:
+            seen.add(c)
+            grid += c
+    for c in "ABCDEFGHIKLMNOPQRSTUVWXYZ":
+        if c not in seen:
+            grid += c
+    return grid
+
+plain_grid = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+grid1 = build_grid("${kw1}")  # Top-right
+grid2 = build_grid("${kw2}")  # Bottom-left
+
+# TODO: Decode pairs using the four grids
+decoded = ""
+for i in range(0, len(encrypted), 2):
+    if i+1 < len(encrypted):
+        a, b = encrypted[i], encrypted[i+1]
+        posA = grid1.index(a)
+        posB = grid2.index(b)
+        rowA, colA = posA // 5, posA % 5
+        rowB, colB = posB // 5, posB % 5
+        # Reverse lookup
+        decoded += plain_grid[rowA * 5 + colB]
+        decoded += plain_grid[rowB * 5 + colA]
+
+print("Decoded:", decoded.rstrip('X'))`;
+        }
+    },
+
+    // =========================================
+    // LEVEL 6 - Legendary
+    // =========================================
+
+    /**
+     * XOR Cipher - Level 6
+     * Bitwise XOR with key
+     */
+    xorCipher: {
+        name: 'XOR Cipher',
+        difficulty: 'expert',
+        description: 'Modern cipher using bitwise XOR operation. Each character is XORed with a repeating key. XOR is self-inverting.',
+        key: 42,
+        
+        encode(text, key = this.key) {
+            return text.toUpperCase().split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const code = char.charCodeAt(0);
+                const xored = code ^ key;
+                return xored.toString(16).toUpperCase().padStart(2, '0');
+            }).join(' ');
+        },
+        
+        decode(text, key = this.key) {
+            return text.split(' ').map(hex => {
+                if (!/^[0-9A-Fa-f]{2}$/.test(hex)) return hex;
+                const code = parseInt(hex, 16) ^ key;
+                return String.fromCharCode(code);
+            }).join('');
+        },
+        
+        getHint(key = this.key) {
+            return `XOR key: ${key} (0x${key.toString(16).toUpperCase()})`;
+        },
+
+        getExample(firstLetter, key = this.key) {
+            const code = firstLetter.charCodeAt(0);
+            const xored = code ^ key;
+            const hex = xored.toString(16).toUpperCase().padStart(2, '0');
+            return {
+                visual: `Encryption: ${firstLetter}(${code}) XOR ${key} = ${hex}\nDecryption: ${hex}(${xored}) XOR ${key} = ${firstLetter}\nXOR is self-inverting!`,
+                text: `${firstLetter} → ${hex}`
+            };
+        },
+
+        getPythonCode(encrypted, key = this.key) {
+            return `# XOR Cipher Decoder
+# Bitwise XOR with key - self-inverting
+
+encrypted = "${encrypted}"
+key = ${key}
+
+# TODO: XOR each hex value with the key
+decoded = ""
+for hex_val in encrypted.split(' '):
+    if len(hex_val) == 2:
+        code = int(hex_val, 16) ^ key
+        decoded += chr(code)
+
+print("Decoded:", decoded)`;
+        }
+    },
+
+    /**
+     * Base64-ish - Level 6
+     * Simplified base64-style encoding
+     */
+    base64ish: {
+        name: 'Base64-ish',
+        difficulty: 'expert',
+        description: 'A simplified Base64-style encoding where each letter is converted to a 6-bit binary representation.',
+        
+        chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+        
+        encode(text) {
+            return text.toUpperCase().split('').map(char => {
+                if (!Ciphers.isLetter(char)) return char;
+                const index = Ciphers.letterIndex(char);
+                return this.chars[index];
+            }).join('');
+        },
+        
+        decode(text) {
+            return text.split('').map(char => {
+                const index = this.chars.indexOf(char);
+                if (index >= 0 && index < 26) {
+                    return Ciphers.indexToLetter(index);
+                }
+                return char;
+            }).join('');
+        },
+        
+        getHint() {
+            return 'A=A, B=B... but lowercase means something different';
+        },
+
+        getExample(firstLetter) {
+            const index = Ciphers.letterIndex(firstLetter);
+            const encoded = this.chars[index];
+            return {
+                visual: `Encryption: ${firstLetter} → ${encoded} (index ${index})\nDecryption: Find position in Base64 alphabet`,
+                text: `${firstLetter} → ${encoded}`
+            };
+        },
+
+        getPythonCode(encrypted) {
+            return `# Base64-ish Cipher Decoder
+# Letters mapped to Base64 character set
+
+encrypted = "${encrypted}"
+b64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# TODO: Find each character in Base64 set, map to alphabet
+decoded = ""
+for char in encrypted:
+    idx = b64_chars.find(char)
+    if 0 <= idx < 26:
+        decoded += alphabet[idx]
+    else:
+        decoded += char
+
+print("Decoded:", decoded)`;
+        }
     }
 };
 

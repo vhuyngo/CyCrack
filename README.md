@@ -3,33 +3,39 @@
 [![GitHub](https://img.shields.io/badge/GitHub-vhuyngo-181717?logo=github)](https://github.com/vhuyngo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A cryptography-themed password guessing game where players decode encrypted passwords using various cipher techniques. Test your cryptanalysis skills across 5 progressively challenging levels!
+A cryptography-themed password guessing game where players decode encrypted passwords using various cipher techniques. Test your cryptanalysis skills across 6 progressively challenging levels!
 
-**[Play CyCrack](https://vhuyngo.github.io/cycrack/)** | **[View Source](https://github.com/vhuyngo/cycrack)**
+**[Play CyCrack](https://vhuyngo.github.io/CyCrack/)** | **[View Source](https://github.com/vhuyngo/cycrack)**
 
 ## Features
 
 ### Gameplay
-- **5 Difficulty Levels**: Rookie → Initiate → Hacker → Expert → Master
-- **17 Cipher Types**: From simple reversals to combined encryption methods
+
+- **6 Difficulty Levels**: Rookie → Initiate → Hacker → Expert → Master → Legendary
+- **28 Cipher Types**: From simple reversals to modern XOR encryption
+- **Endless Mode**: Infinite random ciphers with increasing difficulty
 - **Progressive Unlocking**: Complete levels to unlock new challenges
-- **Random Word Generation**: Unique random letter sequences generated based on game start time
-- **Educational Focus**: Cipher name shown upfront with progressive hints
+- **XP & Leveling System**: Earn XP for every cipher you crack, level up your profile
+- **Achievement System**: 25+ achievements to unlock with XP rewards
+- **Daily Streaks**: Play consecutive days for bonus XP multipliers
+- **6 Unlockable Themes**: Customize the look as you level up
 - **Streak Bonuses**: Chain correct answers for multiplied scores
 - **Count-Up Timer**: Points decrease as time increases - solve quickly for maximum score
 
 ### Educational Hint System
+
 The game focuses on teaching cryptography. The cipher name is **always shown upfront**, and hints help you learn how to decode it:
 
-| Hint | What It Reveals | Score Multiplier |
-|------|-----------------|------------------|
-| **Hint 1** | Detailed description of how the cipher works | ×0.9 |
-| **Hint 2** | Example showing transformation of the **first letter** of the word | ×0.7 |
-| **Hint 3** | Python code framework - complete and run to decode | ×0.4 |
+| Hint             | What It Reveals                                                         | Score Multiplier |
+| ---------------- | ----------------------------------------------------------------------- | ---------------- |
+| **Hint 1** | Detailed description of how the cipher works                            | ×0.9            |
+| **Hint 2** | Example showing transformation of the**first letter** of the word | ×0.7            |
+| **Hint 3** | Python code framework - complete and run to decode                      | ×0.4            |
 
 Hints must be used in order and each progressively reduces your score multiplier.
 
 ### Interactive Python IDE
+
 - **Real Python Runtime**: Uses Pyodide (CPython compiled to WebAssembly) for authentic Python execution
 - **Full Python Support**: All standard library functions, loops, string operations, etc.
 - **Built-in Code Editor**: Write and run actual Python code to decode ciphers
@@ -38,6 +44,7 @@ Hints must be used in order and each progressively reduces your score multiplier
 - **Reopen Anytime**: Button available to reopen the IDE after closing
 
 ### Scratch Notepad
+
 - **Always Visible**: Dedicated scratch notepad panel on the right side
 - **Persistent Notes**: Notes saved during your session
 - **Perfect for**: Working out cipher logic, tracking letter mappings, testing theories
@@ -46,19 +53,58 @@ Hints must be used in order and each progressively reduces your score multiplier
 
 | Level | Difficulty | Ciphers |
 |-------|------------|---------|
-| **1. Rookie** | Easy | Reversed, ROT13, Simple Shift |
-| **2. Initiate** | Easy-Medium | Caesar, Atbash, A1Z26 |
-| **3. Hacker** | Medium | Vigenère, Rail Fence, Morse, Binary |
-| **4. Expert** | Hard | Affine, Substitution, Columnar, Hexadecimal |
-| **5. Master** | Expert | Double Caesar, Reverse+Caesar, Atbash+Vigenère |
+| **1. Rookie** | Easy | Reversed, ROT13, Simple Shift, Pig Latin, ROT5 |
+| **2. Initiate** | Easy-Medium | Caesar, Atbash, A1Z26, Keyword, Beaufort |
+| **3. Hacker** | Medium | Vigenère, Rail Fence, Morse, Binary, Playfair, Polybius |
+| **4. Expert** | Hard | Affine, Substitution, Columnar, Hex, Bifid, ADFGX |
+| **5. Master** | Expert | Double Caesar, Reverse+Caesar, Atbash+Vigenère, Four-Square |
+| **6. Legendary** | Master | XOR Cipher, Base64-ish, Four-Square, Bifid, Playfair |
+
+### Endless Mode
+
+- **Infinite Challenges**: Random ciphers from all 28 types
+- **Increasing Difficulty**: Word length grows as you progress
+- **High Score Tracking**: Compete against your best round and score
+- **All Ciphers Unlocked**: Access every cipher type from round 1
+
+### Progression System
+
+- **XP Rewards**: Earn XP for every cipher solved
+- **Level Up**: Exponential XP curve with level-up celebrations
+- **No-Hint Bonus**: 50% more XP when solving without hints
+- **Speed Bonus**: 25% more XP for solving in under 10 seconds
+- **Daily Streak Bonus**: Up to 1% more XP per consecutive day
+
+### Achievements (25+)
+
+- **Cipher Mastery**: First Crack, Apprentice, Adept, Expert, Master
+- **Streaks**: On a Roll (3), Unstoppable (5), Legendary Streak (10)
+- **Speed**: Speed Demon (<10s), Lightning Fast (<5s)
+- **Levels**: Complete each level for unique achievements
+- **Daily**: Consistent (3 days), Weekly Warrior (7), Monthly Master (30)
+- **Endless**: Explorer (10), Warrior (25), Legend (50)
+
+### Themes (6)
+
+| Theme | Unlock Requirement |
+|-------|-------------------|
+| Cyber | Default |
+| Matrix | Level 5 |
+| Ocean | Level 10 |
+| Sunset | Level 15 |
+| Royal | Level 20 |
+| Hacker | Level 25 |
 
 ### Give Up Feature
+
 Stuck on a puzzle? You can:
+
 - Click "Give Up & Reveal Password" to see the answer
 - Confirmation popup prevents accidental reveals
 - Start a new game immediately after
 
 ### Visual Enhancements
+
 - **Confetti Celebrations**: Particle effects when you solve a challenge
 - **Level Complete Screens**: Custom congratulatory messages for each level
 - **Animated UI**: Smooth transitions, glowing effects, and pulsing animations
@@ -68,6 +114,7 @@ Stuck on a puzzle? You can:
 - **No Attempt Limit**: Focus on learning - unlimited guesses per challenge
 
 ### Statistics & Persistence
+
 - **Comprehensive Stats**: Games played, passwords cracked, highest score, best streak
 - **Cipher Mastery**: Track success rate for each cipher type (solved/attempts)
 - **Game History**: View your last 10 games with scores and accuracy
@@ -100,7 +147,9 @@ Final Score = (Base Points - Time Penalty) × Hint Multiplier × Attempt Bonus �
 - **Streak Bonus**: Increases with consecutive correct answers
 
 ### Random Word Generation
+
 Words are randomly generated letter sequences (not dictionary words):
+
 - **Rookie**: 3 random letters
 - **Initiate**: 5 random letters
 - **Hacker**: 8 random letters
@@ -125,6 +174,7 @@ xdg-open index.html
 ```
 
 Or use a local server:
+
 ```bash
 # Python 3
 python -m http.server 8000
@@ -180,6 +230,7 @@ External Dependencies (loaded via CDN):
 ## Educational Value
 
 This game teaches:
+
 - **Classical Ciphers**: Caesar, Vigenère, Atbash, and more
 - **Transposition Ciphers**: Rail Fence, Columnar
 - **Encoding Schemes**: Morse, Binary, Hexadecimal, A1Z26
@@ -190,6 +241,7 @@ This game teaches:
 ## Browser Support
 
 Works in all modern browsers that support WebAssembly:
+
 - Chrome/Edge (latest)
 - Firefox (latest)
 - Safari (latest)

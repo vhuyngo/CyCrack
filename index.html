@@ -47,6 +47,18 @@
                         <p>Test your cryptography skills by decoding encrypted passwords!</p>
                     </div>
                     
+                    <!-- Player Stats Bar -->
+                    <div class="player-stats-bar">
+                        <div class="xp-container">
+                            <span id="player-level">Lv.1</span>
+                            <div class="xp-bar">
+                                <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%"></div>
+                            </div>
+                            <span id="xp-display">0/100 XP</span>
+                        </div>
+                        <div id="daily-streak" class="daily-streak">🔥 0 days</div>
+                    </div>
+
                     <div class="difficulty-select">
                         <h3>Select Starting Level</h3>
                         <div class="level-buttons">
@@ -75,16 +87,28 @@
                                 <span class="level-name">Master</span>
                                 <span class="level-desc">Combined ciphers</span>
                             </button>
+                            <button class="level-btn locked" data-level="6">
+                                <span class="level-num">6</span>
+                                <span class="level-name">Legendary</span>
+                                <span class="level-desc">Modern crypto</span>
+                            </button>
                         </div>
                     </div>
 
-                    <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
-                        Start Game <span class="btn-arrow">→</span>
-                    </button>
+                    <div class="start-buttons">
+                        <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
+                            Start Game <span class="btn-arrow">→</span>
+                        </button>
+                        <button id="endless-mode-btn" class="btn btn-secondary btn-large">
+                            ♾️ Endless Mode
+                        </button>
+                    </div>
 
                     <div class="start-footer">
                         <button id="how-to-play-btn" class="btn btn-text">How to Play</button>
                         <button id="view-stats-btn" class="btn btn-text">View Stats</button>
+                        <button id="view-achievements-btn" class="btn btn-text">🏆 Achievements</button>
+                        <button id="view-themes-btn" class="btn btn-text">🎨 Themes</button>
                     </div>
                 </div>
             </section>
@@ -422,6 +446,58 @@
                     <button id="reset-stats-btn" class="btn btn-danger btn-small">
                         Reset All Stats
                     </button>
+                </div>
+            </div>
+
+            <!-- Achievements Modal -->
+            <div id="achievements-modal" class="modal">
+                <div class="modal-content modal-large">
+                    <button class="modal-close" id="close-achievements">&times;</button>
+                    <h2>🏆 Achievements</h2>
+                    <div class="achievements-list" id="achievements-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Themes Modal -->
+            <div id="themes-modal" class="modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-themes">&times;</button>
+                    <h2>🎨 Select Theme</h2>
+                    <p class="theme-unlock-info">Unlock themes by leveling up your profile!</p>
+                    <div class="themes-grid">
+                        <button class="theme-btn active" data-theme="cyber">
+                            <span class="theme-preview cyber-preview"></span>
+                            <span class="theme-name">Cyber</span>
+                            <span class="theme-desc">Default</span>
+                        </button>
+                        <button class="theme-btn locked" data-theme="matrix">
+                            <span class="theme-preview matrix-preview"></span>
+                            <span class="theme-name">Matrix</span>
+                            <span class="theme-desc">Lv.5</span>
+                        </button>
+                        <button class="theme-btn locked" data-theme="ocean">
+                            <span class="theme-preview ocean-preview"></span>
+                            <span class="theme-name">Ocean</span>
+                            <span class="theme-desc">Lv.10</span>
+                        </button>
+                        <button class="theme-btn locked" data-theme="sunset">
+                            <span class="theme-preview sunset-preview"></span>
+                            <span class="theme-name">Sunset</span>
+                            <span class="theme-desc">Lv.15</span>
+                        </button>
+                        <button class="theme-btn locked" data-theme="royal">
+                            <span class="theme-preview royal-preview"></span>
+                            <span class="theme-name">Royal</span>
+                            <span class="theme-desc">Lv.20</span>
+                        </button>
+                        <button class="theme-btn locked" data-theme="hacker">
+                            <span class="theme-preview hacker-preview"></span>
+                            <span class="theme-name">Hacker</span>
+                            <span class="theme-desc">Lv.25</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             
