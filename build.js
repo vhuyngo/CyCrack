@@ -18,6 +18,7 @@ const jsFiles = ['app.js', 'ciphers.js', 'levels.js'];
 const cssFiles = ['styles.css'];
 const htmlFiles = ['index.html', '404.html'];
 const copyFiles = ['.nojekyll'];
+const rootCopyFiles = ['README.md']; // Files to copy from root, not src
 
 // Obfuscator options (high obfuscation)
 const obfuscatorOptions = {
@@ -155,6 +156,7 @@ async function minifyHTML() {
 function copyAdditionalFiles() {
     console.log('\n📋 Copying additional files...');
     
+    // Copy files from src directory
     copyFiles.forEach(file => {
         const srcPath = path.join(srcDir, file);
         const distPath = path.join(distDir, file);
@@ -166,6 +168,20 @@ function copyAdditionalFiles() {
         
         fs.copyFileSync(srcPath, distPath);
         console.log(`  ✓ ${file}`);
+    });
+    
+    // Copy files from root directory
+    rootCopyFiles.forEach(file => {
+        const rootPath = path.join(__dirname, file);
+        const distPath = path.join(distDir, file);
+        
+        if (!fs.existsSync(rootPath)) {
+            console.log(`  ⚠ Skipping ${file} (not found)`);
+            return;
+        }
+        
+        fs.copyFileSync(rootPath, distPath);
+        console.log(`  ✓ ${file} (from root)`);
     });
 }
 
