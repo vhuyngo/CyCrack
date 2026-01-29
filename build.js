@@ -10,7 +10,7 @@ const CleanCSS = require('clean-css');
 const { minify } = require('html-minifier-terser');
 
 // Configuration
-const srcDir = __dirname;
+const srcDir = path.join(__dirname, 'src');
 const distDir = path.join(__dirname, 'dist');
 
 // Files to process
