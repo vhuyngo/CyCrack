@@ -629,7 +629,13 @@ const DOM = {
     resetStatsBtn: document.getElementById('reset-stats-btn'),
     
     // Toast container
-    toastContainer: document.getElementById('toast-container')
+    toastContainer: document.getElementById('toast-container'),
+    
+    // Profile modal
+    profileBtn: document.getElementById('profile-btn'),
+    profileModal: document.getElementById('profile-modal'),
+    closeProfile: document.getElementById('close-profile'),
+    headerPlayerLevel: document.getElementById('header-player-level')
 };
 
 // =========================================
@@ -1649,6 +1655,7 @@ function updateXPDisplay() {
     const xpDisplay = document.getElementById('xp-display');
     const levelDisplay = document.getElementById('player-level');
     const xpBar = document.getElementById('xp-bar-fill');
+    const headerPlayerLevel = document.getElementById('header-player-level');
     
     if (xpDisplay) {
         xpDisplay.textContent = `${xpData.currentXP}/${xpData.xpNeeded} XP`;
@@ -1659,6 +1666,9 @@ function updateXPDisplay() {
     if (xpBar) {
         const percent = (xpData.currentXP / xpData.xpNeeded) * 100;
         xpBar.style.width = `${percent}%`;
+    }
+    if (headerPlayerLevel) {
+        headerPlayerLevel.textContent = xpData.level;
     }
 }
 
@@ -2175,6 +2185,18 @@ function initEventListeners() {
         });
     }
     
+    // Profile button
+    if (DOM.profileBtn) {
+        DOM.profileBtn.addEventListener('click', showProfileModal);
+    }
+    
+    // Close profile modal
+    if (DOM.closeProfile) {
+        DOM.closeProfile.addEventListener('click', () => {
+            hideModal('profile-modal');
+        });
+    }
+    
     DOM.backToMenuBtn.addEventListener('click', () => {
         stopTimer();
         resetGameUIElements();
@@ -2469,6 +2491,124 @@ function updateDailyStreakDisplay() {
     if (streakDisplay) {
         streakDisplay.textContent = `🔥 ${GameState.stats.dailyStreak} day${GameState.stats.dailyStreak !== 1 ? 's' : ''}`;
     }
+}
+
+// =========================================
+// Profile Modal
+// =========================================
+function updateProfileModal() {
+    const stats = GameState.stats;
+    const xpData = XPSystem.calculateLevel(stats.xp);
+    
+    // Update level badges
+    const profileLevelBadge = document.getElementById('profile-level-badge');
+    const profileCurrentLevel = document.getElementById('profile-current-level');
+    const profileNextLevel = document.getElementById('profile-next-level');
+    
+    if (profileLevelBadge) profileLevelBadge.textContent = xpData.level;
+    if (profileCurrentLevel) profileCurrentLevel.textContent = xpData.level;
+    if (profileNextLevel) profileNextLevel.textContent = xpData.level + 1;
+    
+    // Update XP bar
+    const profileXpFill = document.getElementById('profile-xp-fill');
+    const profileCurrentXp = document.getElementById('profile-current-xp');
+    const profileXpNeeded = document.getElementById('profile-xp-needed');
+    const profileXpRemaining = document.getElementById('profile-xp-remaining');
+    
+    const xpPercent = (xpData.currentXP / xpData.xpNeeded) * 100;
+    if (profileXpFill) profileXpFill.style.width = `${xpPercent}%`;
+    if (profileCurrentXp) profileCurrentXp.textContent = xpData.currentXP;
+    if (profileXpNeeded) profileXpNeeded.textContent = xpData.xpNeeded;
+    if (profileXpRemaining) profileXpRemaining.textContent = xpData.xpNeeded - xpData.currentXP;
+    
+    // Update rank based on level
+    const profileRank = document.getElementById('profile-rank');
+    if (profileRank) {
+        const ranks = [
+            { level: 1, name: 'Rookie Decoder' },
+            { level: 5, name: 'Cipher Initiate' },
+            { level: 10, name: 'Code Breaker' },
+            { level: 15, name: 'Crypto Specialist' },
+            { level: 20, name: 'Master Decoder' },
+            { level: 25, name: 'Cipher Legend' }
+        ];
+        const rank = ranks.reverse().find(r => xpData.level >= r.level) || ranks[ranks.length - 1];
+        profileRank.textContent = rank.name;
+    }
+    
+    // Update stats
+    const profileDailyStreak = document.getElementById('profile-daily-streak');
+    const profileTotalCracked = document.getElementById('profile-total-cracked');
+    const profileAccuracy = document.getElementById('profile-accuracy');
+    const profileBestStreak = document.getElementById('profile-best-streak');
+    const profileHighScore = document.getElementById('profile-high-score');
+    const profileHighestLevel = document.getElementById('profile-highest-level');
+    
+    if (profileDailyStreak) profileDailyStreak.textContent = stats.dailyStreak || 0;
+    if (profileTotalCracked) profileTotalCracked.textContent = stats.passwordsCracked || 0;
+    if (profileBestStreak) profileBestStreak.textContent = stats.bestStreak || 0;
+    if (profileHighScore) profileHighScore.textContent = (stats.highestScore || 0).toLocaleString();
+    if (profileHighestLevel) profileHighestLevel.textContent = stats.highestLevel || 1;
+    
+    // Calculate accuracy
+    const total = (stats.passwordsCracked || 0) + (stats.passwordsFailed || 0);
+    const accuracy = total > 0 ? Math.round((stats.passwordsCracked / total) * 100) : 0;
+    if (profileAccuracy) profileAccuracy.textContent = `${accuracy}%`;
+    
+    // Update progress section
+    const profileGamesPlayed = document.getElementById('profile-games-played');
+    const profileTimePlayed = document.getElementById('profile-time-played');
+    const profileAchievementsCount = document.getElementById('profile-achievements-count');
+    const profileEndlessBest = document.getElementById('profile-endless-best');
+    
+    if (profileGamesPlayed) profileGamesPlayed.textContent = stats.totalGamesPlayed || 0;
+    
+    if (profileTimePlayed) {
+        const minutes = Math.floor((stats.totalTimePlayed || 0) / 60);
+        const hours = Math.floor(minutes / 60);
+        if (hours > 0) {
+            profileTimePlayed.textContent = `${hours}h ${minutes % 60}m`;
+        } else {
+            profileTimePlayed.textContent = `${minutes}m`;
+        }
+    }
+    
+    if (profileAchievementsCount) {
+        const unlockedCount = (stats.achievements || []).length;
+        const totalCount = Achievements.definitions.length;
+        profileAchievementsCount.textContent = `${unlockedCount}/${totalCount}`;
+    }
+    
+    if (profileEndlessBest) {
+        profileEndlessBest.textContent = `Round ${stats.endlessHighRound || 0}`;
+    }
+    
+    // Update milestones
+    updateProfileMilestones(xpData.level);
+    
+    // Update header level badge
+    if (DOM.headerPlayerLevel) {
+        DOM.headerPlayerLevel.textContent = xpData.level;
+    }
+}
+
+function updateProfileMilestones(currentLevel) {
+    const milestones = document.querySelectorAll('.milestone-item');
+    const milestoneLevels = [1, 5, 10, 15, 20, 25];
+    
+    milestones.forEach((milestone, index) => {
+        const requiredLevel = milestoneLevels[index];
+        if (currentLevel >= requiredLevel) {
+            milestone.classList.add('unlocked');
+        } else {
+            milestone.classList.remove('unlocked');
+        }
+    });
+}
+
+function showProfileModal() {
+    updateProfileModal();
+    showModal('profile-modal');
 }
 
 // =========================================

@@ -20,19 +20,25 @@
                 <span class="logo-icon">🔐</span>
                 <h1>CyCrack</h1>
             </div>
-            <div class="header-stats">
-                <div class="stat stat-with-hover">
-                    <span class="stat-label">Score</span>
-                    <span class="stat-value" id="total-score">0</span>
-                    <div class="stat-hover-info">
-                        <span class="stat-label">🔥 Streak</span>
-                        <span class="stat-value" id="streak">0</span>
+            <div class="header-right">
+                <div class="header-stats">
+                    <div class="stat stat-with-hover">
+                        <span class="stat-label">Score</span>
+                        <span class="stat-value" id="total-score">0</span>
+                        <div class="stat-hover-info">
+                            <span class="stat-label">🔥 Streak</span>
+                            <span class="stat-value" id="streak">0</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Level</span>
+                        <span class="stat-value" id="current-level">1</span>
                     </div>
                 </div>
-                <div class="stat">
-                    <span class="stat-label">Level</span>
-                    <span class="stat-value" id="current-level">1</span>
-                </div>
+                <button class="profile-btn" id="profile-btn" title="View Profile">
+                    <span class="profile-icon">👤</span>
+                    <span class="profile-level-badge" id="header-player-level">1</span>
+                </button>
             </div>
         </header>
 
@@ -103,10 +109,21 @@
                             ♾️ Endless Mode
                         </button>
                     </div>
+                    
+                    <!-- How to Play - Prominent for new players -->
+                    <div class="how-to-play-banner" id="how-to-play-banner">
+                        <button id="how-to-play-btn" class="btn btn-how-to-play">
+                            <span class="how-to-icon">📖</span>
+                            <span class="how-to-text">
+                                <strong>New to CyCrack?</strong>
+                                <span>Learn how to play</span>
+                            </span>
+                            <span class="how-to-arrow">→</span>
+                        </button>
+                    </div>
 
                     <div class="start-footer">
-                        <button id="how-to-play-btn" class="btn btn-text">How to Play</button>
-                        <button id="view-stats-btn" class="btn btn-text">View Stats</button>
+                        <button id="view-stats-btn" class="btn btn-text">📊 Statistics</button>
                         <button id="view-achievements-btn" class="btn btn-text">🏆 Achievements</button>
                         <button id="view-themes-btn" class="btn btn-text">🎨 Themes</button>
                     </div>
@@ -322,69 +339,186 @@
 
             <!-- How to Play Modal -->
             <div id="how-to-play-modal" class="modal">
-                <div class="modal-content">
+                <div class="modal-content modal-large how-to-play-modal">
                     <button class="modal-close" id="close-how-to-play">&times;</button>
-                    <h2>How to Play</h2>
+                    <h2>📖 How to Play</h2>
                     
-                    <div class="how-to-section">
-                        <h3>🎯 Objective</h3>
-                        <p>Decode encrypted passwords using various cryptographic ciphers. Each level introduces new and more challenging encryption methods.</p>
-                    </div>
+                    <div class="how-to-grid">
+                        <div class="how-to-section">
+                            <h3>🎯 Objective</h3>
+                            <p>Decode encrypted passwords using various cryptographic ciphers. Each level introduces new and more challenging encryption methods. Learn real cryptography while having fun!</p>
+                        </div>
 
-                    <div class="how-to-section">
-                        <h3>🎮 Gameplay</h3>
-                        <ul>
-                            <li>You'll be shown an encrypted password</li>
-                            <li>Use the hint system to learn about the cipher</li>
-                            <li>Apply your cryptography knowledge to decode it</li>
-                            <li>Type your guess and submit</li>
-                            <li>Limited attempts per challenge - use them wisely!</li>
-                        </ul>
-                    </div>
+                        <div class="how-to-section">
+                            <h3>🎮 Basic Gameplay</h3>
+                            <ul>
+                                <li>You'll be shown an <strong>encrypted password</strong> and the cipher type used</li>
+                                <li>Use your cryptography knowledge (or hints) to decode it</li>
+                                <li>Type your guess and press <strong>Enter</strong> or click "Crack It"</li>
+                                <li>You have <strong>unlimited attempts</strong> - keep trying!</li>
+                                <li>Correct letters in the right position will be highlighted in green</li>
+                            </ul>
+                        </div>
 
-                    <div class="how-to-section">
-                        <h3>💡 Hint System</h3>
-                        <p>Hints must be used in order and each reduces your score multiplier:</p>
-                        <ul>
-                            <li><strong>Hint 1 (×0.9):</strong> Reveals the cipher category (e.g., "Substitution Cipher")</li>
-                            <li><strong>Hint 2 (×0.7):</strong> Shows the exact cipher name and description</li>
-                            <li><strong>Hint 3 (×0.4):</strong> Displays a visual example of how the cipher works</li>
-                        </ul>
-                    </div>
-
-                    <div class="how-to-section">
-                        <h3>📊 Scoring</h3>
-                        <ul>
-                            <li>Base points depend on the level difficulty</li>
-                            <li>Faster solutions earn time bonus points</li>
-                            <li>Using hints reduces your score multiplier</li>
-                            <li>First-attempt solves get a 1.5× bonus</li>
-                            <li>Consecutive correct answers build a streak multiplier</li>
-                        </ul>
-                    </div>
-
-                    <div class="how-to-section">
-                        <h3>🔐 Cipher Types</h3>
-                        <div class="cipher-list">
-                            <div class="cipher-item">
-                                <strong>Reversed:</strong> Text is simply reversed (HELLO → OLLEH)
-                            </div>
-                            <div class="cipher-item">
-                                <strong>Caesar:</strong> Letters shifted by a fixed amount (A→D with shift 3)
-                            </div>
-                            <div class="cipher-item">
-                                <strong>ROT13:</strong> Special Caesar cipher with shift of 13
-                            </div>
-                            <div class="cipher-item">
-                                <strong>Atbash:</strong> Letters replaced with their reverse (A→Z, B→Y)
-                            </div>
-                            <div class="cipher-item">
-                                <strong>Vigenère:</strong> Uses a keyword to determine variable shifts
-                            </div>
-                            <div class="cipher-item">
-                                <strong>And more...</strong> Advanced levels include combined ciphers!
+                        <div class="how-to-section">
+                            <h3>💡 Hint System</h3>
+                            <p>Hints are progressive - use them in order. Each hint reduces your score multiplier:</p>
+                            <div class="hint-explanation">
+                                <div class="hint-item">
+                                    <span class="hint-badge">1</span>
+                                    <div class="hint-details">
+                                        <strong>Description (×0.9)</strong>
+                                        <span>Learn how the cipher encryption method works</span>
+                                    </div>
+                                </div>
+                                <div class="hint-item">
+                                    <span class="hint-badge">2</span>
+                                    <div class="hint-details">
+                                        <strong>Letter Example (×0.7)</strong>
+                                        <span>See how the first letter of the password transforms</span>
+                                    </div>
+                                </div>
+                                <div class="hint-item">
+                                    <span class="hint-badge">3</span>
+                                    <div class="hint-details">
+                                        <strong>Python Code (×0.4)</strong>
+                                        <span>Get a code template to solve it programmatically</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="how-to-section">
+                            <h3>📊 Scoring System</h3>
+                            <ul>
+                                <li><strong>Base Points:</strong> 100-750 depending on level difficulty</li>
+                                <li><strong>Speed Bonus:</strong> Solve faster for more points</li>
+                                <li><strong>Hint Penalty:</strong> Using hints reduces your multiplier</li>
+                                <li><strong>First Try Bonus:</strong> 1.5× for solving on first attempt</li>
+                                <li><strong>Streak Bonus:</strong> Build multipliers with consecutive solves</li>
+                            </ul>
+                        </div>
+
+                        <div class="how-to-section">
+                            <h3>⬆️ Leveling & XP</h3>
+                            <ul>
+                                <li>Earn <strong>XP</strong> for every password you crack</li>
+                                <li>Bonus XP for <strong>no hints</strong> (+50%) and <strong>speed</strong> (+25%)</li>
+                                <li>Daily streak gives <strong>+1% XP bonus</strong> per day</li>
+                                <li><strong>Unlock themes</strong> at levels 5, 10, 15, 20, and 25</li>
+                                <li>View your progress in the <strong>Profile</strong> (top right)</li>
+                            </ul>
+                        </div>
+
+                        <div class="how-to-section">
+                            <h3>🎲 Game Modes</h3>
+                            <div class="mode-cards">
+                                <div class="mode-card">
+                                    <strong>📚 Level Mode</strong>
+                                    <span>Progress through 6 difficulty levels, each with unique ciphers. Complete challenges to unlock the next level.</span>
+                                </div>
+                                <div class="mode-card">
+                                    <strong>♾️ Endless Mode</strong>
+                                    <span>Test your skills with random ciphers of increasing difficulty. How far can you go?</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="how-to-ciphers">
+                        <h3>🔐 Cipher Reference</h3>
+                        <div class="cipher-tabs">
+                            <div class="cipher-tab-content">
+                                <div class="cipher-category">
+                                    <h4>Beginner Ciphers (Level 1-2)</h4>
+                                    <div class="cipher-grid">
+                                        <div class="cipher-card">
+                                            <strong>Reversed</strong>
+                                            <span>HELLO → OLLEH</span>
+                                            <small>Text is simply reversed</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>ROT13</strong>
+                                            <span>A → N, B → O</span>
+                                            <small>Shift each letter by 13</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Caesar</strong>
+                                            <span>A → D (shift 3)</span>
+                                            <small>Shift letters by a fixed amount</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Atbash</strong>
+                                            <span>A → Z, B → Y</span>
+                                            <small>Replace with reverse alphabet</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="cipher-category">
+                                    <h4>Intermediate Ciphers (Level 3-4)</h4>
+                                    <div class="cipher-grid">
+                                        <div class="cipher-card">
+                                            <strong>Vigenère</strong>
+                                            <span>Uses a keyword</span>
+                                            <small>Variable shifts per letter</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Morse Code</strong>
+                                            <span>• – • – –</span>
+                                            <small>Dots and dashes encoding</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Binary</strong>
+                                            <span>01001000 = H</span>
+                                            <small>8-bit ASCII encoding</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Rail Fence</strong>
+                                            <span>Zigzag pattern</span>
+                                            <small>Write in rails, read rows</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="cipher-category">
+                                    <h4>Advanced Ciphers (Level 5-6)</h4>
+                                    <div class="cipher-grid">
+                                        <div class="cipher-card">
+                                            <strong>Affine</strong>
+                                            <span>E(x) = (ax + b) mod 26</span>
+                                            <small>Mathematical cipher</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Playfair</strong>
+                                            <span>5×5 grid cipher</span>
+                                            <small>Letter pairs substitution</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>Combined</strong>
+                                            <span>Multiple ciphers</span>
+                                            <small>Layered encryption</small>
+                                        </div>
+                                        <div class="cipher-card">
+                                            <strong>XOR Cipher</strong>
+                                            <span>Bitwise XOR</span>
+                                            <small>Modern encryption basis</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="how-to-tips">
+                        <h3>💪 Pro Tips</h3>
+                        <ul class="tips-list">
+                            <li>📝 Use the <strong>scratch notepad</strong> (click 📝) to work out solutions</li>
+                            <li>🐍 The <strong>Python IDE</strong> (hint 3) lets you run real code to solve ciphers</li>
+                            <li>🔥 Play daily to build your <strong>streak</strong> and earn bonus XP</li>
+                            <li>🎯 Solve without hints for <strong>50% more XP</strong></li>
+                            <li>⚡ Fast solves (under 10s) give <strong>25% XP bonus</strong></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -497,6 +631,135 @@
                             <span class="theme-name">Hacker</span>
                             <span class="theme-desc">Lv.25</span>
                         </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Modal -->
+            <div id="profile-modal" class="modal">
+                <div class="modal-content modal-large profile-modal">
+                    <button class="modal-close" id="close-profile">&times;</button>
+                    
+                    <!-- Profile Header -->
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <span class="avatar-icon">🔓</span>
+                            <span class="avatar-level" id="profile-level-badge">1</span>
+                        </div>
+                        <div class="profile-info">
+                            <h2 class="profile-title">Cipher Agent</h2>
+                            <p class="profile-rank" id="profile-rank">Rookie Decoder</p>
+                        </div>
+                    </div>
+                    
+                    <!-- XP Progress Section -->
+                    <div class="profile-xp-section">
+                        <div class="profile-xp-header">
+                            <span class="xp-level-text">Level <span id="profile-current-level">1</span></span>
+                            <span class="xp-progress-text"><span id="profile-current-xp">0</span> / <span id="profile-xp-needed">100</span> XP</span>
+                        </div>
+                        <div class="profile-xp-bar">
+                            <div class="profile-xp-fill" id="profile-xp-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="xp-to-next">
+                            <span id="profile-xp-remaining">100</span> XP to Level <span id="profile-next-level">2</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="profile-stats-grid">
+                        <div class="profile-stat-card highlight">
+                            <span class="stat-icon">🔥</span>
+                            <span class="stat-value" id="profile-daily-streak">0</span>
+                            <span class="stat-label">Day Streak</span>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span class="stat-icon">🔐</span>
+                            <span class="stat-value" id="profile-total-cracked">0</span>
+                            <span class="stat-label">Passwords Cracked</span>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span class="stat-icon">🎯</span>
+                            <span class="stat-value" id="profile-accuracy">0%</span>
+                            <span class="stat-label">Accuracy</span>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span class="stat-icon">⚡</span>
+                            <span class="stat-value" id="profile-best-streak">0</span>
+                            <span class="stat-label">Best Streak</span>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span class="stat-icon">🏆</span>
+                            <span class="stat-value" id="profile-high-score">0</span>
+                            <span class="stat-label">High Score</span>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span class="stat-icon">📊</span>
+                            <span class="stat-value" id="profile-highest-level">1</span>
+                            <span class="stat-label">Highest Level</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Overview -->
+                    <div class="profile-progress-section">
+                        <h3>Progress Overview</h3>
+                        <div class="progress-cards">
+                            <div class="progress-card">
+                                <div class="progress-card-header">
+                                    <span class="progress-card-title">🎮 Games Played</span>
+                                    <span class="progress-card-value" id="profile-games-played">0</span>
+                                </div>
+                            </div>
+                            <div class="progress-card">
+                                <div class="progress-card-header">
+                                    <span class="progress-card-title">⏱️ Time Played</span>
+                                    <span class="progress-card-value" id="profile-time-played">0m</span>
+                                </div>
+                            </div>
+                            <div class="progress-card">
+                                <div class="progress-card-header">
+                                    <span class="progress-card-title">🏅 Achievements</span>
+                                    <span class="progress-card-value" id="profile-achievements-count">0/25</span>
+                                </div>
+                            </div>
+                            <div class="progress-card">
+                                <div class="progress-card-header">
+                                    <span class="progress-card-title">♾️ Endless Best</span>
+                                    <span class="progress-card-value" id="profile-endless-best">Round 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Level Milestones -->
+                    <div class="profile-milestones-section">
+                        <h3>Level Milestones</h3>
+                        <div class="milestones-list" id="profile-milestones">
+                            <div class="milestone-item unlocked">
+                                <span class="milestone-level">Lv.1</span>
+                                <span class="milestone-reward">🎮 Game Access</span>
+                            </div>
+                            <div class="milestone-item">
+                                <span class="milestone-level">Lv.5</span>
+                                <span class="milestone-reward">🎨 Matrix Theme</span>
+                            </div>
+                            <div class="milestone-item">
+                                <span class="milestone-level">Lv.10</span>
+                                <span class="milestone-reward">🌊 Ocean Theme</span>
+                            </div>
+                            <div class="milestone-item">
+                                <span class="milestone-level">Lv.15</span>
+                                <span class="milestone-reward">🌅 Sunset Theme</span>
+                            </div>
+                            <div class="milestone-item">
+                                <span class="milestone-level">Lv.20</span>
+                                <span class="milestone-reward">👑 Royal Theme</span>
+                            </div>
+                            <div class="milestone-item">
+                                <span class="milestone-level">Lv.25</span>
+                                <span class="milestone-reward">💀 Hacker Theme</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
