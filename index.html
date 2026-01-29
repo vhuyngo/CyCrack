@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyCrack - Password Guessing Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Confetti Canvas for Celebrations -->
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔐</span>
+                <h1>CyCrack</h1>
+            </div>
+            <div class="header-stats">
+                <div class="stat stat-with-hover">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="total-score">0</span>
+                    <div class="stat-hover-info">
+                        <span class="stat-label">🔥 Streak</span>
+                        <span class="stat-value" id="streak">0</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Level</span>
+                    <span class="stat-value" id="current-level">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="main-content">
+            <!-- Start Screen -->
+            <section id="start-screen" class="screen active">
+                <div class="start-content">
+                    <div class="start-logo">
+                        <div class="start-icon animated-lock">🔓</div>
+                        <h2>Welcome to CyCrack</h2>
+                        <p>Test your cryptography skills by decoding encrypted passwords!</p>
+                    </div>
+                    
+                    <div class="difficulty-select">
+                        <h3>Select Starting Level</h3>
+                        <div class="level-buttons">
+                            <button class="level-btn" data-level="1">
+                                <span class="level-num">1</span>
+                                <span class="level-name">Rookie</span>
+                                <span class="level-desc">Basic ciphers</span>
+                            </button>
+                            <button class="level-btn" data-level="2">
+                                <span class="level-num">2</span>
+                                <span class="level-name">Initiate</span>
+                                <span class="level-desc">Classic ciphers</span>
+                            </button>
+                            <button class="level-btn locked" data-level="3">
+                                <span class="level-num">3</span>
+                                <span class="level-name">Hacker</span>
+                                <span class="level-desc">Complex ciphers</span>
+                            </button>
+                            <button class="level-btn locked" data-level="4">
+                                <span class="level-num">4</span>
+                                <span class="level-name">Expert</span>
+                                <span class="level-desc">Advanced ciphers</span>
+                            </button>
+                            <button class="level-btn locked" data-level="5">
+                                <span class="level-num">5</span>
+                                <span class="level-name">Master</span>
+                                <span class="level-desc">Combined ciphers</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
+                        Start Game <span class="btn-arrow">→</span>
+                    </button>
+
+                    <div class="start-footer">
+                        <button id="how-to-play-btn" class="btn btn-text">How to Play</button>
+                        <button id="view-stats-btn" class="btn btn-text">View Stats</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Game Screen -->
+            <section id="game-screen" class="screen">
+                <div class="game-layout-3col notepad-hidden">
+                    <!-- Left: Cipher Info Panel -->
+                    <aside class="cipher-info-panel" id="cipher-info-panel">
+                        <div class="panel-locked" id="panel-locked">
+                            <div class="lock-icon">🔒</div>
+                            <p>Use hints to reveal cipher information</p>
+                        </div>
+                        <div class="panel-content hidden" id="panel-content">
+                            <div class="cipher-header">
+                                <h3 id="cipher-name">???</h3>
+                                <span class="cipher-difficulty" id="cipher-difficulty">???</span>
+                            </div>
+                            <p class="cipher-description hidden" id="cipher-description"></p>
+                            <div class="cipher-example-box hidden" id="cipher-example-box">
+                                <h4>How It Works</h4>
+                                <pre id="cipher-example"></pre>
+                            </div>
+                            
+                            <!-- Python IDE Button -->
+                            <button class="btn btn-secondary btn-small hidden" id="show-python-ide-btn" style="width: 100%; margin-top: var(--spacing-md);">
+                                <span>🐍</span> Open Code Editor
+                            </button>
+                        </div>
+                        
+                        <!-- Previous Attempts Section -->
+                        <div class="previous-attempts-panel">
+                            <h4>Previous Attempts</h4>
+                            <div class="attempts-list" id="attempts-list">
+                                <p class="no-attempts">No attempts yet</p>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Center: Main Game Panel -->
+                    <div class="game-panel">
+                        <!-- Progress & Timer -->
+                        <div class="game-header">
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    <span>Challenge <span id="challenge-num">1</span> of <span id="total-challenges">5</span></span>
+                                    <span class="score-multiplier" id="score-multiplier">×1.0</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="header-right-controls">
+                                <!-- Hint Button with Tooltip -->
+                                <button class="btn btn-icon hint-btn" id="hint-btn" title="Use Hint">
+                                    <span class="hint-question-mark">?</span>
+                                    <span class="hint-used-badge hidden" id="hints-used-badge">0</span>
+                                    <!-- Hover Tooltip -->
+                                    <div class="hint-hover-tooltip" id="hint-tooltip">
+                                        <div class="tooltip-title">Next Hint</div>
+                                        <div class="tooltip-content" id="hint-tooltip-content">
+                                            <strong>Description</strong>
+                                            <span>Learn how this cipher works</span>
+                                        </div>
+                                        <div class="tooltip-cost" id="hint-tooltip-cost">Cost: ×0.9</div>
+                                        <div class="tooltip-action">Click to use</div>
+                                    </div>
+                                </button>
+                                <!-- Notepad Toggle Button -->
+                                <button class="btn btn-icon notepad-toggle-btn" id="notepad-toggle" title="Toggle Scratch Notes">
+                                    📝
+                                </button>
+                                <div class="timer" id="timer">
+                                    <span class="timer-icon">⏱</span>
+                                    <span id="timer-value">0:00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Encrypted Password Display -->
+                        <div class="encrypted-display">
+                            <div class="display-label">Encrypted Password</div>
+                            <div class="encrypted-text" id="encrypted-text">KHOOR</div>
+                            <div class="cipher-name-badge" id="cipher-name-badge">
+                                <span class="badge-label">Cipher:</span>
+                                <span id="cipher-name-text">Caesar Cipher</span>
+                            </div>
+                        </div>
+
+
+                        <!-- Input Area -->
+                        <div class="input-area">
+                            <div class="input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="guess-input" 
+                                    class="guess-input" 
+                                    placeholder="Enter your guess..."
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                >
+                                <button id="submit-guess-btn" class="btn btn-submit">
+                                    Crack It
+                                </button>
+                            </div>
+                            <div class="input-feedback" id="input-feedback"></div>
+                        </div>
+
+                        <!-- Give Up Button -->
+                        <div class="give-up-section">
+                            <button class="btn btn-danger-outline" id="give-up-btn">
+                                <span>🏳️</span> Give Up & Reveal Password
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Scratch Notes Panel (Toggleable) -->
+                    <aside class="notepad-panel hidden" id="notepad-panel">
+                        <div class="notepad-header">
+                            <span>📝 Scratch Notes</span>
+                        </div>
+                        <textarea id="notepad-textarea" class="notepad-textarea" placeholder="Take notes here to help decode the cipher..."></textarea>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- Result Screen -->
+            <section id="result-screen" class="screen">
+                <div class="result-content">
+                    <div class="result-icon" id="result-icon">🎉</div>
+                    <h2 id="result-title">Challenge Complete!</h2>
+                    <p id="result-message">You cracked the password!</p>
+                    
+                    <div class="result-stats">
+                        <div class="result-stat">
+                            <span class="result-stat-value" id="result-password">HELLO</span>
+                            <span class="result-stat-label">The Password</span>
+                        </div>
+                        <div class="result-stat">
+                            <span class="result-stat-value" id="result-points">+150</span>
+                            <span class="result-stat-label">Points Earned</span>
+                        </div>
+                        <div class="result-stat">
+                            <span class="result-stat-value" id="result-time">45s</span>
+                            <span class="result-stat-label">Time Taken</span>
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button id="next-challenge-btn" class="btn btn-primary btn-large">
+                            Next Challenge
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <button id="back-to-menu-btn" class="btn btn-secondary">
+                            Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Level Complete Screen -->
+            <section id="level-complete-screen" class="screen">
+                <div class="level-complete-content">
+                    <div class="celebration-container">
+                        <div class="celebration-stars">✨</div>
+                        <div class="level-badge">
+                            <span class="badge-icon">🏆</span>
+                            <span class="badge-level" id="completed-level">1</span>
+                        </div>
+                        <div class="celebration-stars">✨</div>
+                    </div>
+                    <h2 class="level-complete-title">
+                        <span class="congratulations-text">Congratulations!</span>
+                        <span class="level-name-text">Level <span id="level-name-display">Rookie</span> Complete!</span>
+                    </h2>
+                    <p id="level-complete-message" class="level-message">You've mastered the Rookie challenges!</p>
+                    
+                    <div class="level-summary">
+                        <div class="summary-stat">
+                            <span class="summary-value" id="level-total-score">500</span>
+                            <span class="summary-label">Total Score</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="summary-value" id="level-accuracy">80%</span>
+                            <span class="summary-label">Accuracy</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="summary-value" id="level-best-time">32s</span>
+                            <span class="summary-label">Best Time</span>
+                        </div>
+                    </div>
+
+                    <div class="unlock-notice" id="unlock-notice">
+                        <span class="unlock-icon">🔓</span>
+                        <span>Level 2: Initiate unlocked!</span>
+                    </div>
+
+                    <div class="level-complete-actions">
+                        <button id="continue-next-level-btn" class="btn btn-primary btn-large">
+                            Continue to Next Level
+                        </button>
+                        <button id="replay-level-btn" class="btn btn-secondary">
+                            Replay This Level
+                        </button>
+                        <button id="level-menu-btn" class="btn btn-text">
+                            Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How to Play Modal -->
+            <div id="how-to-play-modal" class="modal">
+                <div class="modal-content">
+                    <button class="modal-close" id="close-how-to-play">&times;</button>
+                    <h2>How to Play</h2>
+                    
+                    <div class="how-to-section">
+                        <h3>🎯 Objective</h3>
+                        <p>Decode encrypted passwords using various cryptographic ciphers. Each level introduces new and more challenging encryption methods.</p>
+                    </div>
+
+                    <div class="how-to-section">
+                        <h3>🎮 Gameplay</h3>
+                        <ul>
+                            <li>You'll be shown an encrypted password</li>
+                            <li>Use the hint system to learn about the cipher</li>
+                            <li>Apply your cryptography knowledge to decode it</li>
+                            <li>Type your guess and submit</li>
+                            <li>Limited attempts per challenge - use them wisely!</li>
+                        </ul>
+                    </div>
+
+                    <div class="how-to-section">
+                        <h3>💡 Hint System</h3>
+                        <p>Hints must be used in order and each reduces your score multiplier:</p>
+                        <ul>
+                            <li><strong>Hint 1 (×0.9):</strong> Reveals the cipher category (e.g., "Substitution Cipher")</li>
+                            <li><strong>Hint 2 (×0.7):</strong> Shows the exact cipher name and description</li>
+                            <li><strong>Hint 3 (×0.4):</strong> Displays a visual example of how the cipher works</li>
+                        </ul>
+                    </div>
+
+                    <div class="how-to-section">
+                        <h3>📊 Scoring</h3>
+                        <ul>
+                            <li>Base points depend on the level difficulty</li>
+                            <li>Faster solutions earn time bonus points</li>
+                            <li>Using hints reduces your score multiplier</li>
+                            <li>First-attempt solves get a 1.5× bonus</li>
+                            <li>Consecutive correct answers build a streak multiplier</li>
+                        </ul>
+                    </div>
+
+                    <div class="how-to-section">
+                        <h3>🔐 Cipher Types</h3>
+                        <div class="cipher-list">
+                            <div class="cipher-item">
+                                <strong>Reversed:</strong> Text is simply reversed (HELLO → OLLEH)
+                            </div>
+                            <div class="cipher-item">
+                                <strong>Caesar:</strong> Letters shifted by a fixed amount (A→D with shift 3)
+                            </div>
+                            <div class="cipher-item">
+                                <strong>ROT13:</strong> Special Caesar cipher with shift of 13
+                            </div>
+                            <div class="cipher-item">
+                                <strong>Atbash:</strong> Letters replaced with their reverse (A→Z, B→Y)
+                            </div>
+                            <div class="cipher-item">
+                                <strong>Vigenère:</strong> Uses a keyword to determine variable shifts
+                            </div>
+                            <div class="cipher-item">
+                                <strong>And more...</strong> Advanced levels include combined ciphers!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Modal -->
+            <div id="stats-modal" class="modal">
+                <div class="modal-content modal-large">
+                    <button class="modal-close" id="close-stats">&times;</button>
+                    <h2>Your Statistics</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-total-games">0</span>
+                            <span class="stats-card-label">Games Played</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-passwords-cracked">0</span>
+                            <span class="stats-card-label">Passwords Cracked</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-highest-score">0</span>
+                            <span class="stats-card-label">Highest Score</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-best-streak">0</span>
+                            <span class="stats-card-label">Best Streak</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-highest-level">1</span>
+                            <span class="stats-card-label">Highest Level</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-accuracy">0%</span>
+                            <span class="stats-card-label">Accuracy</span>
+                        </div>
+                        <div class="stats-card">
+                            <span class="stats-card-value" id="stats-total-time">0m</span>
+                            <span class="stats-card-label">Time Played</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-sections">
+                        <div class="cipher-stats">
+                            <h3>Cipher Mastery</h3>
+                            <p class="stats-description">Track your success rate for each cipher type</p>
+                            <div class="cipher-progress-list" id="cipher-progress-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="game-history">
+                            <h3>Recent Games</h3>
+                            <div class="game-history-list" id="game-history-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="reset-stats-btn" class="btn btn-danger btn-small">
+                        Reset All Stats
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Python IDE Modal -->
+            <div id="python-ide-modal" class="modal">
+                <div class="modal-content modal-xl python-ide-modal">
+                    <button class="modal-close" id="close-python-ide">&times;</button>
+                    <div class="ide-header">
+                        <div>
+                            <h2>🐍 Python Code Editor</h2>
+                            <p class="ide-description">Complete the code and run it to decode the cipher. <strong>Shortcuts:</strong> Tab (indent) • Ctrl+/ (comment) • Ctrl+X (cut)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="python-ide-split">
+                        <div class="code-editor-panel">
+                            <div class="panel-header">Code</div>
+                            <textarea id="python-code-editor" class="code-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+                        </div>
+                        <div class="output-panel">
+                            <div class="panel-header">
+                                <span>Output</span>
+                                <div class="output-header-right">
+                                    <span class="output-status" id="output-status">Ready</span>
+                                    <button id="run-python-btn" class="btn btn-primary btn-small btn-run">
+                                        <span>▶</span> Run
+                                    </button>
+                                </div>
+                            </div>
+                            <pre id="python-output" class="python-output">Click "Run" to execute...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Give Up Confirmation Modal -->
+            <div id="give-up-modal" class="modal">
+                <div class="modal-content modal-small">
+                    <div class="modal-icon">⚠️</div>
+                    <h2>Give Up?</h2>
+                    <p>Are you sure you want to reveal the password? This will end the current game and you'll need to start a new one.</p>
+                    <p class="modal-warning">You will receive 0 points for this challenge.</p>
+                    <div class="modal-actions">
+                        <button id="confirm-give-up-btn" class="btn btn-danger">
+                            Yes, Reveal Password
+                        </button>
+                        <button id="cancel-give-up-btn" class="btn btn-secondary">
+                            No, Keep Trying
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over / New Game Modal -->
+            <div id="game-over-modal" class="modal">
+                <div class="modal-content modal-small">
+                    <div class="modal-icon" id="game-over-icon">🔓</div>
+                    <h2 id="game-over-title">Password Revealed</h2>
+                    <div class="revealed-password">
+                        <span class="revealed-label">The password was:</span>
+                        <span class="revealed-value" id="revealed-password">HELLO</span>
+                    </div>
+                    <div class="game-over-stats">
+                        <p>Final Score: <strong id="final-score">0</strong></p>
+                        <p>Challenges Completed: <strong id="challenges-completed">0</strong>/<strong id="challenges-total">5</strong></p>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="new-game-btn" class="btn btn-primary btn-large">
+                            Start New Game
+                        </button>
+                        <button id="game-over-menu-btn" class="btn btn-secondary">
+                            Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <!-- Pyodide for Python execution -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    
+    <script src="ciphers.js"></script>
+    <script src="levels.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
