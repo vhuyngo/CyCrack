@@ -1,11 +1,18 @@
 # CyCrack 🔐
 
+<div align="center">
+
+### 🎮 [**PLAY NOW → vhuyngo.github.io/CyCrack**](https://vhuyngo.github.io/CyCrack/) 🎮
+
+[![Play CyCrack](https://img.shields.io/badge/Play%20Now-CyCrack-00d9ff?style=for-the-badge&logo=game&logoColor=white)](https://vhuyngo.github.io/CyCrack/)
 [![GitHub](https://img.shields.io/badge/GitHub-vhuyngo-181717?logo=github)](https://github.com/vhuyngo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A cryptography-themed password guessing game where players decode encrypted passwords using various cipher techniques. Test your cryptanalysis skills across 6 progressively challenging levels!
+*A cryptography-themed password guessing game where players decode encrypted passwords using various cipher techniques. Test your cryptanalysis skills across 6 progressively challenging levels!*
 
-**[Play CyCrack](https://vhuyngo.github.io/CyCrack/)** | **[View Source](https://github.com/vhuyngo/cycrack)**
+</div>
+
+---
 
 ## Features
 
