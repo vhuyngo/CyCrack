@@ -35,9 +35,8 @@
                         <span class="stat-value" id="current-level">1</span>
                     </div>
                 </div>
-                <button class="profile-btn" id="profile-btn" title="View Profile">
+                <button class="profile-btn rank-bronze" id="profile-btn" title="View Profile">
                     <span class="profile-icon">👤</span>
-                    <span class="profile-level-badge" id="header-player-level">1</span>
                 </button>
             </div>
         </header>
@@ -53,18 +52,6 @@
                         <p>Test your cryptography skills by decoding encrypted passwords!</p>
                     </div>
                     
-                    <!-- Player Stats Bar -->
-                    <div class="player-stats-bar">
-                        <div class="xp-container">
-                            <span id="player-level">Lv.1</span>
-                            <div class="xp-bar">
-                                <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%"></div>
-                            </div>
-                            <span id="xp-display">0/100 XP</span>
-                        </div>
-                        <div id="daily-streak" class="daily-streak">🔥 0 days</div>
-                    </div>
-
                     <div class="difficulty-select">
                         <h3>Select Starting Level</h3>
                         <div class="level-buttons">
@@ -105,27 +92,15 @@
                         <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
                             Start Game <span class="btn-arrow">→</span>
                         </button>
-                        <button id="endless-mode-btn" class="btn btn-secondary btn-large">
-                            ♾️ Endless Mode
-                        </button>
                     </div>
                     
-                    <!-- How to Play - Prominent for new players -->
-                    <div class="how-to-play-banner" id="how-to-play-banner">
-                        <button id="how-to-play-btn" class="btn btn-how-to-play">
-                            <span class="how-to-icon">📖</span>
-                            <span class="how-to-text">
-                                <strong>New to CyCrack?</strong>
-                                <span>Learn how to play</span>
-                            </span>
-                            <span class="how-to-arrow">→</span>
+                    <div class="start-buttons-secondary">
+                        <button id="endless-mode-btn" class="btn btn-secondary btn-icon" title="Endless Mode">
+                            <span class="btn-icon-symbol">∞</span>
                         </button>
-                    </div>
-
-                    <div class="start-footer">
-                        <button id="view-stats-btn" class="btn btn-text">📊 Statistics</button>
-                        <button id="view-achievements-btn" class="btn btn-text">🏆 Achievements</button>
-                        <button id="view-themes-btn" class="btn btn-text">🎨 Themes</button>
+                        <button id="how-to-play-btn" class="btn btn-secondary btn-icon" title="How to Play">
+                            <span class="btn-icon-symbol">?</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -337,6 +312,432 @@
                 </div>
             </section>
 
+            <!-- Profile Screen -->
+            <section id="profile-screen" class="screen">
+                <div class="profile-screen-container">
+                    <!-- Profile Header -->
+                    <div class="profile-screen-header">
+                        <button class="profile-back-btn" id="profile-back-btn">
+                            <span>←</span> Back
+                        </button>
+                        <h1 class="profile-screen-title">Profile</h1>
+                        <div class="profile-header-spacer"></div>
+                    </div>
+
+                    <!-- Profile Hero Section -->
+                    <div class="profile-hero">
+                        <div class="profile-hero-bg"></div>
+                        <div class="profile-hero-content">
+                            <div class="profile-avatar-large">
+                                <span class="avatar-emoji" id="profile-avatar-emoji">🔓</span>
+                                <span class="avatar-level-badge" id="profile-hero-level">1</span>
+                            </div>
+                            <div class="profile-identity">
+                                <div class="profile-name-container">
+                                    <h2 class="profile-name" id="profile-player-name">Cipher Agent</h2>
+                                    <button class="edit-name-btn" id="edit-name-btn" title="Edit Name">✏️</button>
+                                </div>
+                                <div class="profile-name-edit hidden" id="profile-name-edit">
+                                    <input type="text" id="profile-name-input" class="profile-name-input" maxlength="20" placeholder="Enter name...">
+                                    <button class="save-name-btn" id="save-name-btn">✓</button>
+                                    <button class="cancel-name-btn" id="cancel-name-btn">✕</button>
+                                </div>
+                                <p class="profile-rank-title" id="profile-rank-title">Rookie Decoder</p>
+                                <div class="profile-quick-stats">
+                                    <div class="quick-stat">
+                                        <span class="quick-stat-icon">🔥</span>
+                                        <span class="quick-stat-value" id="profile-hero-streak">0</span>
+                                        <span class="quick-stat-label">Day Streak</span>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <span class="quick-stat-icon">🔐</span>
+                                        <span class="quick-stat-value" id="profile-hero-cracked">0</span>
+                                        <span class="quick-stat-label">Cracked</span>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <span class="quick-stat-icon">🏆</span>
+                                        <span class="quick-stat-value" id="profile-hero-achievements">0</span>
+                                        <span class="quick-stat-label">Achievements</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- XP Bar in Hero -->
+                        <div class="profile-hero-xp">
+                            <div class="hero-xp-info">
+                                <span class="hero-xp-level">Level <span id="profile-hero-xp-level">1</span></span>
+                                <span class="hero-xp-text"><span id="profile-hero-xp-current">0</span> / <span id="profile-hero-xp-needed">100</span> XP</span>
+                            </div>
+                            <div class="hero-xp-bar">
+                                <div class="hero-xp-fill" id="profile-hero-xp-fill"></div>
+                            </div>
+                            <p class="hero-xp-next"><span id="profile-hero-xp-remaining">100</span> XP to Level <span id="profile-hero-next-level">2</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tabs -->
+                    <div class="profile-tabs">
+                        <button class="profile-tab active" data-tab="level">
+                            <span class="tab-text">Level</span>
+                        </button>
+                        <button class="profile-tab" data-tab="stats">
+                            <span class="tab-text">Stats</span>
+                        </button>
+                        <button class="profile-tab" data-tab="achievements">
+                            <span class="tab-text">Achievements</span>
+                        </button>
+                        <button class="profile-tab" data-tab="themes">
+                            <span class="tab-text">Themes</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="profile-tab-content">
+                        <!-- Level Tab -->
+                        <div class="tab-pane active" id="tab-level">
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Daily Streak</h3>
+                                <div class="streak-display">
+                                    <div class="streak-flame">🔥</div>
+                                    <div class="streak-info">
+                                        <span class="streak-count" id="tab-streak-count">0</span>
+                                        <span class="streak-label">Day Streak</span>
+                                    </div>
+                                    <div class="streak-bonus">
+                                        <span class="bonus-label">XP Bonus</span>
+                                        <span class="bonus-value" id="tab-streak-bonus">+0%</span>
+                                    </div>
+                                </div>
+                                <div class="streak-calendar" id="streak-calendar">
+                                    <!-- Generated by JS -->
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Level Progress</h3>
+                                <div class="level-progress-grid">
+                                    <div class="level-card" data-level="1">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">1</span>
+                                            <span class="level-card-name">Rookie</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">✓</span>
+                                            <span>Unlocked</span>
+                                        </div>
+                                    </div>
+                                    <div class="level-card locked" data-level="2">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">2</span>
+                                            <span class="level-card-name">Initiate</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">🔒</span>
+                                            <span>Locked</span>
+                                        </div>
+                                    </div>
+                                    <div class="level-card locked" data-level="3">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">3</span>
+                                            <span class="level-card-name">Hacker</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">🔒</span>
+                                            <span>Locked</span>
+                                        </div>
+                                    </div>
+                                    <div class="level-card locked" data-level="4">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">4</span>
+                                            <span class="level-card-name">Expert</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">🔒</span>
+                                            <span>Locked</span>
+                                        </div>
+                                    </div>
+                                    <div class="level-card locked" data-level="5">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">5</span>
+                                            <span class="level-card-name">Master</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">🔒</span>
+                                            <span>Locked</span>
+                                        </div>
+                                    </div>
+                                    <div class="level-card locked" data-level="6">
+                                        <div class="level-card-header">
+                                            <span class="level-card-num">6</span>
+                                            <span class="level-card-name">Legendary</span>
+                                        </div>
+                                        <div class="level-card-status">
+                                            <span class="status-icon">🔒</span>
+                                            <span>Locked</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Level Rewards</h3>
+                                <div class="rewards-timeline">
+                                    <div class="reward-item unlocked">
+                                        <div class="reward-level">Lv.1</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">🎮</span>
+                                            <span class="reward-name">Game Access</span>
+                                        </div>
+                                    </div>
+                                    <div class="reward-item">
+                                        <div class="reward-level">Lv.5</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">🌿</span>
+                                            <span class="reward-name">Matrix Theme</span>
+                                        </div>
+                                    </div>
+                                    <div class="reward-item">
+                                        <div class="reward-level">Lv.10</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">🌊</span>
+                                            <span class="reward-name">Ocean Theme</span>
+                                        </div>
+                                    </div>
+                                    <div class="reward-item">
+                                        <div class="reward-level">Lv.15</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">🌅</span>
+                                            <span class="reward-name">Sunset Theme</span>
+                                        </div>
+                                    </div>
+                                    <div class="reward-item">
+                                        <div class="reward-level">Lv.20</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">👑</span>
+                                            <span class="reward-name">Royal Theme</span>
+                                        </div>
+                                    </div>
+                                    <div class="reward-item">
+                                        <div class="reward-level">Lv.25</div>
+                                        <div class="reward-connector"></div>
+                                        <div class="reward-content">
+                                            <span class="reward-icon">💀</span>
+                                            <span class="reward-name">Hacker Theme</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Tab -->
+                        <div class="tab-pane" id="tab-stats">
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Overview</h3>
+                                <div class="stats-overview-grid">
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">🎮</span>
+                                        <span class="stat-card-value" id="tab-games-played">0</span>
+                                        <span class="stat-card-label">Games Played</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">🔐</span>
+                                        <span class="stat-card-value" id="tab-passwords-cracked">0</span>
+                                        <span class="stat-card-label">Passwords Cracked</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">❌</span>
+                                        <span class="stat-card-value" id="tab-passwords-failed">0</span>
+                                        <span class="stat-card-label">Passwords Failed</span>
+                                    </div>
+                                    <div class="stat-card highlight">
+                                        <span class="stat-card-icon">🎯</span>
+                                        <span class="stat-card-value" id="tab-accuracy">0%</span>
+                                        <span class="stat-card-label">Accuracy</span>
+                                    </div>
+                                    <div class="stat-card highlight">
+                                        <span class="stat-card-icon">🏆</span>
+                                        <span class="stat-card-value" id="tab-high-score">0</span>
+                                        <span class="stat-card-label">High Score</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">⚡</span>
+                                        <span class="stat-card-value" id="tab-best-streak">0</span>
+                                        <span class="stat-card-label">Best Streak</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">📊</span>
+                                        <span class="stat-card-value" id="tab-highest-level">1</span>
+                                        <span class="stat-card-label">Highest Level</span>
+                                    </div>
+                                    <div class="stat-card">
+                                        <span class="stat-card-icon">⏱️</span>
+                                        <span class="stat-card-value" id="tab-time-played">0m</span>
+                                        <span class="stat-card-label">Time Played</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Endless Mode</h3>
+                                <div class="endless-stats">
+                                    <div class="endless-stat-card">
+                                        <span class="endless-icon">🏃</span>
+                                        <div class="endless-info">
+                                            <span class="endless-value" id="tab-endless-round">0</span>
+                                            <span class="endless-label">Best Round</span>
+                                        </div>
+                                    </div>
+                                    <div class="endless-stat-card">
+                                        <span class="endless-icon">💰</span>
+                                        <div class="endless-info">
+                                            <span class="endless-value" id="tab-endless-score">0</span>
+                                            <span class="endless-label">High Score</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Cipher Mastery</h3>
+                                <div class="cipher-mastery-list" id="tab-cipher-mastery">
+                                    <!-- Generated by JS -->
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Recent Games</h3>
+                                <div class="recent-games-list" id="tab-recent-games">
+                                    <!-- Generated by JS -->
+                                </div>
+                            </div>
+
+                            <div class="tab-section">
+                                <button class="btn btn-danger btn-small" id="tab-reset-stats">
+                                    🗑️ Reset All Statistics
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Achievements Tab -->
+                        <div class="tab-pane" id="tab-achievements">
+                            <div class="achievements-header">
+                                <div class="achievements-summary">
+                                    <span class="achievements-count" id="tab-achievements-unlocked">0</span>
+                                    <span class="achievements-total">/ <span id="tab-achievements-total">25</span> Unlocked</span>
+                                </div>
+                                <div class="achievements-xp">
+                                    <span class="xp-earned" id="tab-achievements-xp">0</span>
+                                    <span class="xp-label">XP Earned</span>
+                                </div>
+                            </div>
+
+                            <div class="achievements-filters">
+                                <button class="achievement-filter active" data-filter="all">All</button>
+                                <button class="achievement-filter" data-filter="unlocked">Unlocked</button>
+                                <button class="achievement-filter" data-filter="locked">Locked</button>
+                            </div>
+
+                            <div class="achievements-grid" id="tab-achievements-grid">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Themes Tab -->
+                        <div class="tab-pane" id="tab-themes">
+                            <div class="themes-header">
+                                <p class="themes-description">Customize your CyCrack experience! Unlock new themes by leveling up.</p>
+                            </div>
+
+                            <div class="themes-showcase" id="tab-themes-showcase">
+                                <div class="theme-card active" data-theme="cyber">
+                                    <div class="theme-preview-large cyber-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Cyber</h4>
+                                        <p class="theme-card-desc">Default cyberpunk aesthetic</p>
+                                        <span class="theme-card-status">✓ Active</span>
+                                    </div>
+                                </div>
+
+                                <div class="theme-card locked" data-theme="matrix">
+                                    <div class="theme-preview-large matrix-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Matrix</h4>
+                                        <p class="theme-card-desc">Green terminal aesthetic</p>
+                                        <span class="theme-card-status locked-status">🔒 Unlock at Lv.5</span>
+                                    </div>
+                                </div>
+
+                                <div class="theme-card locked" data-theme="ocean">
+                                    <div class="theme-preview-large ocean-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Ocean</h4>
+                                        <p class="theme-card-desc">Deep sea blue theme</p>
+                                        <span class="theme-card-status locked-status">🔒 Unlock at Lv.10</span>
+                                    </div>
+                                </div>
+
+                                <div class="theme-card locked" data-theme="sunset">
+                                    <div class="theme-preview-large sunset-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Sunset</h4>
+                                        <p class="theme-card-desc">Warm orange and purple</p>
+                                        <span class="theme-card-status locked-status">🔒 Unlock at Lv.15</span>
+                                    </div>
+                                </div>
+
+                                <div class="theme-card locked" data-theme="royal">
+                                    <div class="theme-preview-large royal-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Royal</h4>
+                                        <p class="theme-card-desc">Elegant purple and gold</p>
+                                        <span class="theme-card-status locked-status">🔒 Unlock at Lv.20</span>
+                                    </div>
+                                </div>
+
+                                <div class="theme-card locked" data-theme="hacker">
+                                    <div class="theme-preview-large hacker-preview-large">
+                                        <div class="theme-preview-content">
+                                            <span class="preview-text">Aa</span>
+                                        </div>
+                                    </div>
+                                    <div class="theme-card-info">
+                                        <h4 class="theme-card-name">Hacker</h4>
+                                        <p class="theme-card-desc">Red and black elite</p>
+                                        <span class="theme-card-status locked-status">🔒 Unlock at Lv.25</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- How to Play Modal -->
             <div id="how-to-play-modal" class="modal">
                 <div class="modal-content modal-large how-to-play-modal">
@@ -523,246 +924,6 @@
                 </div>
             </div>
 
-            <!-- Stats Modal -->
-            <div id="stats-modal" class="modal">
-                <div class="modal-content modal-large">
-                    <button class="modal-close" id="close-stats">&times;</button>
-                    <h2>Your Statistics</h2>
-                    
-                    <div class="stats-grid">
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-total-games">0</span>
-                            <span class="stats-card-label">Games Played</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-passwords-cracked">0</span>
-                            <span class="stats-card-label">Passwords Cracked</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-highest-score">0</span>
-                            <span class="stats-card-label">Highest Score</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-best-streak">0</span>
-                            <span class="stats-card-label">Best Streak</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-highest-level">1</span>
-                            <span class="stats-card-label">Highest Level</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-accuracy">0%</span>
-                            <span class="stats-card-label">Accuracy</span>
-                        </div>
-                        <div class="stats-card">
-                            <span class="stats-card-value" id="stats-total-time">0m</span>
-                            <span class="stats-card-label">Time Played</span>
-                        </div>
-                    </div>
-
-                    <div class="stats-sections">
-                        <div class="cipher-stats">
-                            <h3>Cipher Mastery</h3>
-                            <p class="stats-description">Track your success rate for each cipher type</p>
-                            <div class="cipher-progress-list" id="cipher-progress-list">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                        
-                        <div class="game-history">
-                            <h3>Recent Games</h3>
-                            <div class="game-history-list" id="game-history-list">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="reset-stats-btn" class="btn btn-danger btn-small">
-                        Reset All Stats
-                    </button>
-                </div>
-            </div>
-
-            <!-- Achievements Modal -->
-            <div id="achievements-modal" class="modal">
-                <div class="modal-content modal-large">
-                    <button class="modal-close" id="close-achievements">&times;</button>
-                    <h2>🏆 Achievements</h2>
-                    <div class="achievements-list" id="achievements-list">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Themes Modal -->
-            <div id="themes-modal" class="modal">
-                <div class="modal-content">
-                    <button class="modal-close" id="close-themes">&times;</button>
-                    <h2>🎨 Select Theme</h2>
-                    <p class="theme-unlock-info">Unlock themes by leveling up your profile!</p>
-                    <div class="themes-grid">
-                        <button class="theme-btn active" data-theme="cyber">
-                            <span class="theme-preview cyber-preview"></span>
-                            <span class="theme-name">Cyber</span>
-                            <span class="theme-desc">Default</span>
-                        </button>
-                        <button class="theme-btn locked" data-theme="matrix">
-                            <span class="theme-preview matrix-preview"></span>
-                            <span class="theme-name">Matrix</span>
-                            <span class="theme-desc">Lv.5</span>
-                        </button>
-                        <button class="theme-btn locked" data-theme="ocean">
-                            <span class="theme-preview ocean-preview"></span>
-                            <span class="theme-name">Ocean</span>
-                            <span class="theme-desc">Lv.10</span>
-                        </button>
-                        <button class="theme-btn locked" data-theme="sunset">
-                            <span class="theme-preview sunset-preview"></span>
-                            <span class="theme-name">Sunset</span>
-                            <span class="theme-desc">Lv.15</span>
-                        </button>
-                        <button class="theme-btn locked" data-theme="royal">
-                            <span class="theme-preview royal-preview"></span>
-                            <span class="theme-name">Royal</span>
-                            <span class="theme-desc">Lv.20</span>
-                        </button>
-                        <button class="theme-btn locked" data-theme="hacker">
-                            <span class="theme-preview hacker-preview"></span>
-                            <span class="theme-name">Hacker</span>
-                            <span class="theme-desc">Lv.25</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Profile Modal -->
-            <div id="profile-modal" class="modal">
-                <div class="modal-content modal-large profile-modal">
-                    <button class="modal-close" id="close-profile">&times;</button>
-                    
-                    <!-- Profile Header -->
-                    <div class="profile-header">
-                        <div class="profile-avatar">
-                            <span class="avatar-icon">🔓</span>
-                            <span class="avatar-level" id="profile-level-badge">1</span>
-                        </div>
-                        <div class="profile-info">
-                            <h2 class="profile-title">Cipher Agent</h2>
-                            <p class="profile-rank" id="profile-rank">Rookie Decoder</p>
-                        </div>
-                    </div>
-                    
-                    <!-- XP Progress Section -->
-                    <div class="profile-xp-section">
-                        <div class="profile-xp-header">
-                            <span class="xp-level-text">Level <span id="profile-current-level">1</span></span>
-                            <span class="xp-progress-text"><span id="profile-current-xp">0</span> / <span id="profile-xp-needed">100</span> XP</span>
-                        </div>
-                        <div class="profile-xp-bar">
-                            <div class="profile-xp-fill" id="profile-xp-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="xp-to-next">
-                            <span id="profile-xp-remaining">100</span> XP to Level <span id="profile-next-level">2</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats Grid -->
-                    <div class="profile-stats-grid">
-                        <div class="profile-stat-card highlight">
-                            <span class="stat-icon">🔥</span>
-                            <span class="stat-value" id="profile-daily-streak">0</span>
-                            <span class="stat-label">Day Streak</span>
-                        </div>
-                        <div class="profile-stat-card">
-                            <span class="stat-icon">🔐</span>
-                            <span class="stat-value" id="profile-total-cracked">0</span>
-                            <span class="stat-label">Passwords Cracked</span>
-                        </div>
-                        <div class="profile-stat-card">
-                            <span class="stat-icon">🎯</span>
-                            <span class="stat-value" id="profile-accuracy">0%</span>
-                            <span class="stat-label">Accuracy</span>
-                        </div>
-                        <div class="profile-stat-card">
-                            <span class="stat-icon">⚡</span>
-                            <span class="stat-value" id="profile-best-streak">0</span>
-                            <span class="stat-label">Best Streak</span>
-                        </div>
-                        <div class="profile-stat-card">
-                            <span class="stat-icon">🏆</span>
-                            <span class="stat-value" id="profile-high-score">0</span>
-                            <span class="stat-label">High Score</span>
-                        </div>
-                        <div class="profile-stat-card">
-                            <span class="stat-icon">📊</span>
-                            <span class="stat-value" id="profile-highest-level">1</span>
-                            <span class="stat-label">Highest Level</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Progress Overview -->
-                    <div class="profile-progress-section">
-                        <h3>Progress Overview</h3>
-                        <div class="progress-cards">
-                            <div class="progress-card">
-                                <div class="progress-card-header">
-                                    <span class="progress-card-title">🎮 Games Played</span>
-                                    <span class="progress-card-value" id="profile-games-played">0</span>
-                                </div>
-                            </div>
-                            <div class="progress-card">
-                                <div class="progress-card-header">
-                                    <span class="progress-card-title">⏱️ Time Played</span>
-                                    <span class="progress-card-value" id="profile-time-played">0m</span>
-                                </div>
-                            </div>
-                            <div class="progress-card">
-                                <div class="progress-card-header">
-                                    <span class="progress-card-title">🏅 Achievements</span>
-                                    <span class="progress-card-value" id="profile-achievements-count">0/25</span>
-                                </div>
-                            </div>
-                            <div class="progress-card">
-                                <div class="progress-card-header">
-                                    <span class="progress-card-title">♾️ Endless Best</span>
-                                    <span class="progress-card-value" id="profile-endless-best">Round 0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Level Milestones -->
-                    <div class="profile-milestones-section">
-                        <h3>Level Milestones</h3>
-                        <div class="milestones-list" id="profile-milestones">
-                            <div class="milestone-item unlocked">
-                                <span class="milestone-level">Lv.1</span>
-                                <span class="milestone-reward">🎮 Game Access</span>
-                            </div>
-                            <div class="milestone-item">
-                                <span class="milestone-level">Lv.5</span>
-                                <span class="milestone-reward">🎨 Matrix Theme</span>
-                            </div>
-                            <div class="milestone-item">
-                                <span class="milestone-level">Lv.10</span>
-                                <span class="milestone-reward">🌊 Ocean Theme</span>
-                            </div>
-                            <div class="milestone-item">
-                                <span class="milestone-level">Lv.15</span>
-                                <span class="milestone-reward">🌅 Sunset Theme</span>
-                            </div>
-                            <div class="milestone-item">
-                                <span class="milestone-level">Lv.20</span>
-                                <span class="milestone-reward">👑 Royal Theme</span>
-                            </div>
-                            <div class="milestone-item">
-                                <span class="milestone-level">Lv.25</span>
-                                <span class="milestone-reward">💀 Hacker Theme</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Python IDE Modal -->
             <div id="python-ide-modal" class="modal">

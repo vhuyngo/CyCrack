@@ -616,26 +616,17 @@ const DOM = {
     newGameBtn: document.getElementById('new-game-btn'),
     gameOverMenuBtn: document.getElementById('game-over-menu-btn'),
     
-    // Stats modal elements
-    statsTotalGames: document.getElementById('stats-total-games'),
-    statsPasswordsCracked: document.getElementById('stats-passwords-cracked'),
-    statsHighestScore: document.getElementById('stats-highest-score'),
-    statsBestStreak: document.getElementById('stats-best-streak'),
-    statsHighestLevel: document.getElementById('stats-highest-level'),
-    statsAccuracy: document.getElementById('stats-accuracy'),
-    statsTotalTime: document.getElementById('stats-total-time'),
-    cipherProgressList: document.getElementById('cipher-progress-list'),
-    gameHistoryList: document.getElementById('game-history-list'),
-    resetStatsBtn: document.getElementById('reset-stats-btn'),
     
     // Toast container
     toastContainer: document.getElementById('toast-container'),
     
-    // Profile modal
+    // Profile button in header
     profileBtn: document.getElementById('profile-btn'),
-    profileModal: document.getElementById('profile-modal'),
-    closeProfile: document.getElementById('close-profile'),
-    headerPlayerLevel: document.getElementById('header-player-level')
+    
+    // Profile screen
+    profileScreen: document.getElementById('profile-screen'),
+    profileBackBtn: document.getElementById('profile-back-btn'),
+    viewProfileBtn: document.getElementById('view-profile-btn')
 };
 
 // =========================================
@@ -1058,95 +1049,6 @@ function showFeedback(message, type) {
     }, 2500);
 }
 
-function updateStatsModal() {
-    try {
-        const stats = GameState.stats;
-        
-        // Ensure stats object has all required properties
-        if (!stats.gameHistory) {
-            stats.gameHistory = [];
-        }
-        if (!stats.cipherStats) {
-            stats.cipherStats = {};
-        }
-        
-        // Update basic stats with null checks
-        if (DOM.statsTotalGames) DOM.statsTotalGames.textContent = stats.totalGamesPlayed || 0;
-        if (DOM.statsPasswordsCracked) DOM.statsPasswordsCracked.textContent = stats.passwordsCracked || 0;
-        if (DOM.statsHighestScore) DOM.statsHighestScore.textContent = (stats.highestScore || 0).toLocaleString();
-        if (DOM.statsBestStreak) DOM.statsBestStreak.textContent = stats.bestStreak || 0;
-        if (DOM.statsHighestLevel) DOM.statsHighestLevel.textContent = stats.highestLevel || 1;
-        
-        const total = (stats.passwordsCracked || 0) + (stats.passwordsFailed || 0);
-        const accuracy = total > 0 ? Math.round(((stats.passwordsCracked || 0) / total) * 100) : 0;
-        if (DOM.statsAccuracy) DOM.statsAccuracy.textContent = `${accuracy}%`;
-        
-        // Total time played
-        if (DOM.statsTotalTime) {
-            const minutes = Math.floor((stats.totalTimePlayed || 0) / 60);
-            const hours = Math.floor(minutes / 60);
-            if (hours > 0) {
-                DOM.statsTotalTime.textContent = `${hours}h ${minutes % 60}m`;
-            } else {
-                DOM.statsTotalTime.textContent = `${minutes}m`;
-            }
-        }
-        
-        const cipherNames = ['reversed', 'rot13', 'simpleShift', 'caesar', 'atbash', 'a1z26', 
-                             'vigenere', 'railFence', 'morse', 'binary', 'affine', 'substitution', 
-                             'columnar', 'hex', 'doubleCaesar', 'reverseCaesar', 'atbashVigenere'];
-        
-        // Cipher mastery progress
-        if (DOM.cipherProgressList) {
-            DOM.cipherProgressList.innerHTML = cipherNames.map(name => {
-                const cipher = Ciphers[name];
-                const cipherStat = stats.cipherStats[name] || { solved: 0, attempts: 0 };
-                const successRate = cipherStat.attempts > 0 
-                    ? Math.round((cipherStat.solved / cipherStat.attempts) * 100) 
-                    : 0;
-                const practiced = cipherStat.attempts > 0;
-                
-                return `
-                    <div class="cipher-progress-item ${practiced ? 'practiced' : 'not-practiced'}">
-                        <span class="cipher-progress-name">${cipher?.name || name}</span>
-                        <div class="cipher-progress-stats">
-                            <span class="cipher-attempts">${cipherStat.solved}/${cipherStat.attempts}</span>
-                        </div>
-                        <div class="cipher-progress-bar">
-                            <div class="cipher-progress-fill" style="width: ${successRate}%"></div>
-                        </div>
-                        <span class="cipher-progress-value">${successRate}%</span>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Game history (last 10 games)
-        if (DOM.gameHistoryList) {
-            if (stats.gameHistory && stats.gameHistory.length > 0) {
-                const recentGames = stats.gameHistory.slice(-10).reverse();
-                DOM.gameHistoryList.innerHTML = recentGames.map(game => {
-                    const date = new Date(game.timestamp);
-                    const dateStr = date.toLocaleDateString();
-                    const levelName = Levels.getLevel(game.level)?.name || `Level ${game.level}`;
-                    return `
-                        <div class="game-history-item">
-                            <span class="history-date">${dateStr}</span>
-                            <span class="history-level">${levelName}</span>
-                            <span class="history-score">${(game.score || 0).toLocaleString()} pts</span>
-                            <span class="history-accuracy">${game.accuracy || 0}%</span>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                DOM.gameHistoryList.innerHTML = '<p class="no-history">No games played yet.</p>';
-            }
-        }
-    } catch (error) {
-        console.error('Error updating stats modal:', error);
-        showToast('Error loading statistics', 'error');
-    }
-}
 
 // =========================================
 // Cipher Info Panel
@@ -1651,25 +1553,8 @@ function showEndlessGameOver() {
 function updateXPDisplay() {
     const xpData = XPSystem.calculateLevel(GameState.stats.xp);
     
-    // Update any XP-related UI elements
-    const xpDisplay = document.getElementById('xp-display');
-    const levelDisplay = document.getElementById('player-level');
-    const xpBar = document.getElementById('xp-bar-fill');
-    const headerPlayerLevel = document.getElementById('header-player-level');
-    
-    if (xpDisplay) {
-        xpDisplay.textContent = `${xpData.currentXP}/${xpData.xpNeeded} XP`;
-    }
-    if (levelDisplay) {
-        levelDisplay.textContent = `Lv.${xpData.level}`;
-    }
-    if (xpBar) {
-        const percent = (xpData.currentXP / xpData.xpNeeded) * 100;
-        xpBar.style.width = `${percent}%`;
-    }
-    if (headerPlayerLevel) {
-        headerPlayerLevel.textContent = xpData.level;
-    }
+    // Update profile button rank color
+    updateProfileRankColor(xpData.level);
 }
 
 function nextChallenge() {
@@ -2163,39 +2048,27 @@ function initEventListeners() {
         endlessBtn.addEventListener('click', startEndlessMode);
     }
     
-    // Theme selector
-    const themeButtons = document.querySelectorAll('.theme-btn');
-    themeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const themeName = btn.dataset.theme;
-            if (GameState.stats.unlockedThemes.includes(themeName)) {
-                Themes.apply(themeName);
-                updateThemeButtons();
-            } else {
-                showToast('🔒 This theme is locked!', 'error');
-            }
-        });
-    });
     
-    // Achievements button
-    const achievementsBtn = document.getElementById('view-achievements-btn');
-    if (achievementsBtn) {
-        achievementsBtn.addEventListener('click', () => {
-            showAchievementsModal();
-        });
-    }
-    
-    // Profile button
+    // Profile button (header)
     if (DOM.profileBtn) {
-        DOM.profileBtn.addEventListener('click', showProfileModal);
+        DOM.profileBtn.addEventListener('click', showProfileScreen);
     }
     
-    // Close profile modal
-    if (DOM.closeProfile) {
-        DOM.closeProfile.addEventListener('click', () => {
-            hideModal('profile-modal');
+    // View Profile button (start screen footer)
+    if (DOM.viewProfileBtn) {
+        DOM.viewProfileBtn.addEventListener('click', showProfileScreen);
+    }
+    
+    // Profile back button
+    if (DOM.profileBackBtn) {
+        DOM.profileBackBtn.addEventListener('click', () => {
+            showScreen('start-screen');
         });
     }
+    
+    // Initialize profile tabs and name editing
+    initProfileTabs();
+    initNameEditing();
     
     DOM.backToMenuBtn.addEventListener('click', () => {
         stopTimer();
@@ -2231,62 +2104,6 @@ function initEventListeners() {
         hideModal('how-to-play-modal');
     });
     
-    if (DOM.viewStatsBtn) {
-        DOM.viewStatsBtn.addEventListener('click', () => {
-            try {
-                console.log('View Stats button clicked');
-                updateStatsModal();
-                const modal = document.getElementById('stats-modal');
-                console.log('Stats modal element:', modal);
-                if (modal) {
-                    showModal('stats-modal');
-                    console.log('Modal should be visible now');
-                } else {
-                    console.error('Stats modal element not found in DOM');
-                    showToast('Stats modal not found', 'error');
-                }
-            } catch (error) {
-                console.error('Error opening stats modal:', error);
-                showToast('Error opening statistics', 'error');
-            }
-        });
-    } else {
-        console.error('View Stats button not found in DOM');
-    }
-    
-    DOM.closeStats.addEventListener('click', () => {
-        hideModal('stats-modal');
-    });
-    
-    // Achievements modal
-    const closeAchievements = document.getElementById('close-achievements');
-    if (closeAchievements) {
-        closeAchievements.addEventListener('click', () => {
-            hideModal('achievements-modal');
-        });
-    }
-    
-    // Themes modal
-    const viewThemesBtn = document.getElementById('view-themes-btn');
-    if (viewThemesBtn) {
-        viewThemesBtn.addEventListener('click', () => {
-            updateThemeButtons();
-            showModal('themes-modal');
-        });
-    }
-    
-    const closeThemes = document.getElementById('close-themes');
-    if (closeThemes) {
-        closeThemes.addEventListener('click', () => {
-            hideModal('themes-modal');
-        });
-    }
-    
-    DOM.resetStatsBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset all your stats? This cannot be undone.')) {
-            resetStats();
-        }
-    });
     
     // Python IDE
     if (DOM.runPythonBtn) {
@@ -2431,60 +2248,6 @@ function initEventListeners() {
     });
 }
 
-// =========================================
-// Achievements Modal
-// =========================================
-function showAchievementsModal() {
-    const modal = document.getElementById('achievements-modal');
-    const list = document.getElementById('achievements-list');
-    
-    if (!modal || !list) {
-        showToast('Achievements feature coming soon!', 'info');
-        return;
-    }
-    
-    const achievements = Achievements.getAll();
-    const unlockedCount = achievements.filter(a => a.unlocked).length;
-    
-    list.innerHTML = achievements.map(achievement => `
-        <div class="achievement-item ${achievement.unlocked ? 'unlocked' : 'locked'}">
-            <span class="achievement-icon">${achievement.icon}</span>
-            <div class="achievement-info">
-                <strong>${achievement.name}</strong>
-                <span>${achievement.description}</span>
-            </div>
-            <span class="achievement-xp">${achievement.unlocked ? '✓' : `+${achievement.xp} XP`}</span>
-        </div>
-    `).join('');
-    
-    const header = modal.querySelector('.modal-header h2');
-    if (header) {
-        header.textContent = `🏆 Achievements (${unlockedCount}/${achievements.length})`;
-    }
-    
-    showModal('achievements-modal');
-}
-
-function updateThemeButtons() {
-    const buttons = document.querySelectorAll('.theme-btn');
-    buttons.forEach(btn => {
-        const themeName = btn.dataset.theme;
-        const isUnlocked = GameState.stats.unlockedThemes.includes(themeName);
-        const isActive = GameState.currentTheme === themeName;
-        
-        btn.classList.toggle('locked', !isUnlocked);
-        btn.classList.toggle('active', isActive);
-        
-        if (!isUnlocked) {
-            const reqLevel = themeName === 'matrix' ? 5 : 
-                            themeName === 'ocean' ? 10 : 
-                            themeName === 'sunset' ? 15 : 
-                            themeName === 'royal' ? 20 : 
-                            themeName === 'hacker' ? 25 : 1;
-            btn.title = `Unlock at Level ${reqLevel}`;
-        }
-    });
-}
 
 function updateDailyStreakDisplay() {
     const streakDisplay = document.getElementById('daily-streak');
@@ -2494,121 +2257,492 @@ function updateDailyStreakDisplay() {
 }
 
 // =========================================
-// Profile Modal
+// Profile Screen
 // =========================================
-function updateProfileModal() {
+function showProfileScreen() {
+    updateProfileScreen();
+    showScreen('profile-screen');
+}
+
+function updateProfileScreen() {
     const stats = GameState.stats;
     const xpData = XPSystem.calculateLevel(stats.xp);
     
-    // Update level badges
-    const profileLevelBadge = document.getElementById('profile-level-badge');
-    const profileCurrentLevel = document.getElementById('profile-current-level');
-    const profileNextLevel = document.getElementById('profile-next-level');
-    
-    if (profileLevelBadge) profileLevelBadge.textContent = xpData.level;
-    if (profileCurrentLevel) profileCurrentLevel.textContent = xpData.level;
-    if (profileNextLevel) profileNextLevel.textContent = xpData.level + 1;
-    
-    // Update XP bar
-    const profileXpFill = document.getElementById('profile-xp-fill');
-    const profileCurrentXp = document.getElementById('profile-current-xp');
-    const profileXpNeeded = document.getElementById('profile-xp-needed');
-    const profileXpRemaining = document.getElementById('profile-xp-remaining');
-    
-    const xpPercent = (xpData.currentXP / xpData.xpNeeded) * 100;
-    if (profileXpFill) profileXpFill.style.width = `${xpPercent}%`;
-    if (profileCurrentXp) profileCurrentXp.textContent = xpData.currentXP;
-    if (profileXpNeeded) profileXpNeeded.textContent = xpData.xpNeeded;
-    if (profileXpRemaining) profileXpRemaining.textContent = xpData.xpNeeded - xpData.currentXP;
-    
-    // Update rank based on level
-    const profileRank = document.getElementById('profile-rank');
-    if (profileRank) {
-        const ranks = [
-            { level: 1, name: 'Rookie Decoder' },
-            { level: 5, name: 'Cipher Initiate' },
-            { level: 10, name: 'Code Breaker' },
-            { level: 15, name: 'Crypto Specialist' },
-            { level: 20, name: 'Master Decoder' },
-            { level: 25, name: 'Cipher Legend' }
-        ];
-        const rank = ranks.reverse().find(r => xpData.level >= r.level) || ranks[ranks.length - 1];
-        profileRank.textContent = rank.name;
+    // Update player name
+    const playerName = document.getElementById('profile-player-name');
+    if (playerName) {
+        playerName.textContent = stats.playerName || 'Cipher Agent';
     }
     
-    // Update stats
-    const profileDailyStreak = document.getElementById('profile-daily-streak');
-    const profileTotalCracked = document.getElementById('profile-total-cracked');
-    const profileAccuracy = document.getElementById('profile-accuracy');
-    const profileBestStreak = document.getElementById('profile-best-streak');
-    const profileHighScore = document.getElementById('profile-high-score');
-    const profileHighestLevel = document.getElementById('profile-highest-level');
+    // Update avatar and level badges
+    const heroLevel = document.getElementById('profile-hero-level');
+    const xpLevel = document.getElementById('profile-hero-xp-level');
+    const nextLevel = document.getElementById('profile-hero-next-level');
     
-    if (profileDailyStreak) profileDailyStreak.textContent = stats.dailyStreak || 0;
-    if (profileTotalCracked) profileTotalCracked.textContent = stats.passwordsCracked || 0;
-    if (profileBestStreak) profileBestStreak.textContent = stats.bestStreak || 0;
-    if (profileHighScore) profileHighScore.textContent = (stats.highestScore || 0).toLocaleString();
-    if (profileHighestLevel) profileHighestLevel.textContent = stats.highestLevel || 1;
+    if (heroLevel) heroLevel.textContent = xpData.level;
+    if (xpLevel) xpLevel.textContent = xpData.level;
+    if (nextLevel) nextLevel.textContent = xpData.level + 1;
     
-    // Calculate accuracy
+    // Update rank title
+    const rankTitle = document.getElementById('profile-rank-title');
+    if (rankTitle) {
+        rankTitle.textContent = getPlayerRank(xpData.level);
+    }
+    
+    // Update XP bar
+    const xpFill = document.getElementById('profile-hero-xp-fill');
+    const xpCurrent = document.getElementById('profile-hero-xp-current');
+    const xpNeeded = document.getElementById('profile-hero-xp-needed');
+    const xpRemaining = document.getElementById('profile-hero-xp-remaining');
+    
+    const xpPercent = (xpData.currentXP / xpData.xpNeeded) * 100;
+    if (xpFill) xpFill.style.width = `${xpPercent}%`;
+    if (xpCurrent) xpCurrent.textContent = xpData.currentXP;
+    if (xpNeeded) xpNeeded.textContent = xpData.xpNeeded;
+    if (xpRemaining) xpRemaining.textContent = xpData.xpNeeded - xpData.currentXP;
+    
+    // Update quick stats in hero
+    const heroStreak = document.getElementById('profile-hero-streak');
+    const heroCracked = document.getElementById('profile-hero-cracked');
+    const heroAchievements = document.getElementById('profile-hero-achievements');
+    
+    if (heroStreak) heroStreak.textContent = stats.dailyStreak || 0;
+    if (heroCracked) heroCracked.textContent = stats.passwordsCracked || 0;
+    if (heroAchievements) heroAchievements.textContent = (stats.achievements || []).length;
+    
+    // Update profile button rank color
+    updateProfileRankColor(xpData.level);
+    
+    // Update all tabs
+    updateLevelTab();
+    updateStatsTab();
+    updateAchievementsTab();
+    updateThemesTab();
+}
+
+function getPlayerRank(level) {
+    const ranks = [
+        { level: 1, name: 'Rookie Decoder' },
+        { level: 3, name: 'Apprentice Cipher' },
+        { level: 5, name: 'Cipher Initiate' },
+        { level: 8, name: 'Code Analyst' },
+        { level: 10, name: 'Code Breaker' },
+        { level: 13, name: 'Crypto Specialist' },
+        { level: 15, name: 'Senior Cryptographer' },
+        { level: 18, name: 'Master Decoder' },
+        { level: 20, name: 'Elite Cipher Agent' },
+        { level: 23, name: 'Legendary Decoder' },
+        { level: 25, name: 'Cipher Legend' }
+    ];
+    const rank = ranks.reverse().find(r => level >= r.level) || ranks[ranks.length - 1];
+    return rank.name;
+}
+
+function updateProfileRankColor(level) {
+    const profileBtn = document.getElementById('profile-btn');
+    if (!profileBtn) return;
+    
+    // Remove all rank classes
+    profileBtn.classList.remove('rank-bronze', 'rank-silver', 'rank-gold', 'rank-platinum', 
+                                 'rank-diamond', 'rank-master', 'rank-grandmaster', 'rank-champion');
+    
+    // Add appropriate rank class based on level (Overwatch style)
+    let rankClass;
+    if (level >= 25) {
+        rankClass = 'rank-champion';
+    } else if (level >= 20) {
+        rankClass = 'rank-grandmaster';
+    } else if (level >= 16) {
+        rankClass = 'rank-master';
+    } else if (level >= 13) {
+        rankClass = 'rank-diamond';
+    } else if (level >= 10) {
+        rankClass = 'rank-platinum';
+    } else if (level >= 7) {
+        rankClass = 'rank-gold';
+    } else if (level >= 4) {
+        rankClass = 'rank-silver';
+    } else {
+        rankClass = 'rank-bronze';
+    }
+    
+    profileBtn.classList.add(rankClass);
+}
+
+// Level Tab
+function updateLevelTab() {
+    const stats = GameState.stats;
+    
+    // Update streak display
+    const streakCount = document.getElementById('tab-streak-count');
+    const streakBonus = document.getElementById('tab-streak-bonus');
+    
+    if (streakCount) streakCount.textContent = stats.dailyStreak || 0;
+    if (streakBonus) {
+        const bonus = Math.min((stats.dailyStreak || 0), 100);
+        streakBonus.textContent = `+${bonus}%`;
+    }
+    
+    // Update streak calendar (last 7 days)
+    const calendar = document.getElementById('streak-calendar');
+    if (calendar) {
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        const today = new Date();
+        let calendarHTML = '';
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dayName = days[date.getDay()];
+            const isToday = i === 0;
+            const isActive = i < (stats.dailyStreak || 0);
+            
+            calendarHTML += `
+                <div class="calendar-day ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}">
+                    ${dayName}
+                </div>
+            `;
+        }
+        calendar.innerHTML = calendarHTML;
+    }
+    
+    // Update level progress cards
+    const levelCards = document.querySelectorAll('.level-card');
+    levelCards.forEach(card => {
+        const levelNum = parseInt(card.dataset.level);
+        const isUnlocked = levelNum <= (stats.highestLevel || 1);
+        
+        card.classList.toggle('locked', !isUnlocked);
+        const statusIcon = card.querySelector('.status-icon');
+        const statusText = card.querySelector('.level-card-status span:last-child');
+        
+        if (statusIcon) statusIcon.textContent = isUnlocked ? '✓' : '🔒';
+        if (statusText) statusText.textContent = isUnlocked ? 'Unlocked' : 'Locked';
+    });
+    
+    // Update rewards timeline
+    const rewardItems = document.querySelectorAll('.reward-item');
+    const xpData = XPSystem.calculateLevel(stats.xp);
+    const rewardLevels = [1, 5, 10, 15, 20, 25];
+    
+    rewardItems.forEach((item, index) => {
+        const requiredLevel = rewardLevels[index];
+        item.classList.toggle('unlocked', xpData.level >= requiredLevel);
+    });
+}
+
+// Stats Tab
+function updateStatsTab() {
+    const stats = GameState.stats;
+    
+    // Overview stats
+    const gamesPlayed = document.getElementById('tab-games-played');
+    const passwordsCracked = document.getElementById('tab-passwords-cracked');
+    const passwordsFailed = document.getElementById('tab-passwords-failed');
+    const accuracy = document.getElementById('tab-accuracy');
+    const highScore = document.getElementById('tab-high-score');
+    const bestStreak = document.getElementById('tab-best-streak');
+    const highestLevel = document.getElementById('tab-highest-level');
+    const timePlayed = document.getElementById('tab-time-played');
+    
+    if (gamesPlayed) gamesPlayed.textContent = stats.totalGamesPlayed || 0;
+    if (passwordsCracked) passwordsCracked.textContent = stats.passwordsCracked || 0;
+    if (passwordsFailed) passwordsFailed.textContent = stats.passwordsFailed || 0;
+    if (bestStreak) bestStreak.textContent = stats.bestStreak || 0;
+    if (highestLevel) highestLevel.textContent = stats.highestLevel || 1;
+    if (highScore) highScore.textContent = (stats.highestScore || 0).toLocaleString();
+    
     const total = (stats.passwordsCracked || 0) + (stats.passwordsFailed || 0);
-    const accuracy = total > 0 ? Math.round((stats.passwordsCracked / total) * 100) : 0;
-    if (profileAccuracy) profileAccuracy.textContent = `${accuracy}%`;
+    const acc = total > 0 ? Math.round((stats.passwordsCracked / total) * 100) : 0;
+    if (accuracy) accuracy.textContent = `${acc}%`;
     
-    // Update progress section
-    const profileGamesPlayed = document.getElementById('profile-games-played');
-    const profileTimePlayed = document.getElementById('profile-time-played');
-    const profileAchievementsCount = document.getElementById('profile-achievements-count');
-    const profileEndlessBest = document.getElementById('profile-endless-best');
-    
-    if (profileGamesPlayed) profileGamesPlayed.textContent = stats.totalGamesPlayed || 0;
-    
-    if (profileTimePlayed) {
+    if (timePlayed) {
         const minutes = Math.floor((stats.totalTimePlayed || 0) / 60);
         const hours = Math.floor(minutes / 60);
         if (hours > 0) {
-            profileTimePlayed.textContent = `${hours}h ${minutes % 60}m`;
+            timePlayed.textContent = `${hours}h ${minutes % 60}m`;
         } else {
-            profileTimePlayed.textContent = `${minutes}m`;
+            timePlayed.textContent = `${minutes}m`;
         }
     }
     
-    if (profileAchievementsCount) {
-        const unlockedCount = (stats.achievements || []).length;
-        const totalCount = Achievements.definitions.length;
-        profileAchievementsCount.textContent = `${unlockedCount}/${totalCount}`;
-    }
+    // Endless mode stats
+    const endlessRound = document.getElementById('tab-endless-round');
+    const endlessScore = document.getElementById('tab-endless-score');
     
-    if (profileEndlessBest) {
-        profileEndlessBest.textContent = `Round ${stats.endlessHighRound || 0}`;
-    }
+    if (endlessRound) endlessRound.textContent = stats.endlessHighRound || 0;
+    if (endlessScore) endlessScore.textContent = (stats.endlessHighScore || 0).toLocaleString();
     
-    // Update milestones
-    updateProfileMilestones(xpData.level);
+    // Cipher mastery
+    updateCipherMasteryList();
     
-    // Update header level badge
-    if (DOM.headerPlayerLevel) {
-        DOM.headerPlayerLevel.textContent = xpData.level;
-    }
+    // Recent games
+    updateRecentGamesList();
 }
 
-function updateProfileMilestones(currentLevel) {
-    const milestones = document.querySelectorAll('.milestone-item');
-    const milestoneLevels = [1, 5, 10, 15, 20, 25];
+function updateCipherMasteryList() {
+    const container = document.getElementById('tab-cipher-mastery');
+    if (!container) return;
     
-    milestones.forEach((milestone, index) => {
-        const requiredLevel = milestoneLevels[index];
-        if (currentLevel >= requiredLevel) {
-            milestone.classList.add('unlocked');
-        } else {
-            milestone.classList.remove('unlocked');
+    const stats = GameState.stats;
+    const cipherNames = ['reversed', 'rot13', 'simpleShift', 'caesar', 'atbash', 'a1z26', 
+                         'vigenere', 'railFence', 'morse', 'binary', 'affine', 'substitution', 
+                         'columnar', 'hex', 'doubleCaesar', 'reverseCaesar', 'atbashVigenere'];
+    
+    let html = '';
+    cipherNames.forEach(name => {
+        const cipher = Ciphers[name];
+        const cipherStat = stats.cipherStats?.[name] || { solved: 0, attempts: 0 };
+        const successRate = cipherStat.attempts > 0 
+            ? Math.round((cipherStat.solved / cipherStat.attempts) * 100) 
+            : 0;
+        const practiced = cipherStat.attempts > 0;
+        
+        html += `
+            <div class="cipher-mastery-item ${practiced ? '' : 'not-practiced'}">
+                <span class="cipher-mastery-name">${cipher?.name || name}</span>
+                <span class="cipher-mastery-attempts">${cipherStat.solved}/${cipherStat.attempts}</span>
+                <div class="cipher-mastery-bar">
+                    <div class="cipher-mastery-fill" style="width: ${successRate}%"></div>
+                </div>
+                <span class="cipher-mastery-percent">${successRate}%</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html || '<p class="no-games-message">No ciphers attempted yet</p>';
+}
+
+function updateRecentGamesList() {
+    const container = document.getElementById('tab-recent-games');
+    if (!container) return;
+    
+    const stats = GameState.stats;
+    const history = stats.gameHistory || [];
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p class="no-games-message">No games played yet</p>';
+        return;
+    }
+    
+    const recentGames = history.slice(-10).reverse();
+    let html = '';
+    
+    recentGames.forEach(game => {
+        const date = new Date(game.timestamp);
+        const dateStr = date.toLocaleDateString();
+        const levelName = Levels.getLevel(game.level)?.name || `Level ${game.level}`;
+        
+        html += `
+            <div class="recent-game-item">
+                <span class="game-date">${dateStr}</span>
+                <span class="game-level">${levelName}</span>
+                <span class="game-score">${(game.score || 0).toLocaleString()} pts</span>
+                <span class="game-accuracy">${game.accuracy || 0}%</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Achievements Tab
+function updateAchievementsTab() {
+    const stats = GameState.stats;
+    const achievements = Achievements.getAll();
+    const unlockedCount = achievements.filter(a => a.unlocked).length;
+    const totalXP = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.xp, 0);
+    
+    // Update header
+    const unlocked = document.getElementById('tab-achievements-unlocked');
+    const total = document.getElementById('tab-achievements-total');
+    const xpEarned = document.getElementById('tab-achievements-xp');
+    
+    if (unlocked) unlocked.textContent = unlockedCount;
+    if (total) total.textContent = achievements.length;
+    if (xpEarned) xpEarned.textContent = `+${totalXP} XP`;
+    
+    // Update grid
+    updateAchievementsGrid('all');
+}
+
+function updateAchievementsGrid(filter = 'all') {
+    const container = document.getElementById('tab-achievements-grid');
+    if (!container) return;
+    
+    let achievements = Achievements.getAll();
+    
+    if (filter === 'unlocked') {
+        achievements = achievements.filter(a => a.unlocked);
+    } else if (filter === 'locked') {
+        achievements = achievements.filter(a => !a.unlocked);
+    }
+    
+    let html = '';
+    achievements.forEach(achievement => {
+        html += `
+            <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}">
+                <span class="achievement-card-icon">${achievement.icon}</span>
+                <div class="achievement-card-info">
+                    <span class="achievement-card-name">${achievement.name}</span>
+                    <span class="achievement-card-desc">${achievement.description}</span>
+                </div>
+                <span class="achievement-card-xp">${achievement.unlocked ? '✓' : `+${achievement.xp}`}</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html || '<p class="no-games-message">No achievements found</p>';
+}
+
+// Themes Tab
+function updateThemesTab() {
+    const themeCards = document.querySelectorAll('.theme-card');
+    const xpData = XPSystem.calculateLevel(GameState.stats.xp);
+    const themeLevels = {
+        cyber: 1,
+        matrix: 5,
+        ocean: 10,
+        sunset: 15,
+        royal: 20,
+        hacker: 25
+    };
+    
+    themeCards.forEach(card => {
+        const themeName = card.dataset.theme;
+        const requiredLevel = themeLevels[themeName] || 1;
+        const isUnlocked = xpData.level >= requiredLevel;
+        const isActive = GameState.currentTheme === themeName;
+        
+        card.classList.toggle('locked', !isUnlocked);
+        card.classList.toggle('active', isActive);
+        
+        const status = card.querySelector('.theme-card-status');
+        if (status) {
+            if (isActive) {
+                status.textContent = '✓ Active';
+                status.classList.remove('locked-status');
+            } else if (isUnlocked) {
+                status.textContent = 'Click to Apply';
+                status.classList.remove('locked-status');
+            } else {
+                status.textContent = `🔒 Unlock at Lv.${requiredLevel}`;
+                status.classList.add('locked-status');
+            }
         }
     });
 }
 
-function showProfileModal() {
-    updateProfileModal();
-    showModal('profile-modal');
+// Character Name Functions
+function initNameEditing() {
+    const editBtn = document.getElementById('edit-name-btn');
+    const saveBtn = document.getElementById('save-name-btn');
+    const cancelBtn = document.getElementById('cancel-name-btn');
+    const nameDisplay = document.querySelector('.profile-name-container');
+    const nameEdit = document.getElementById('profile-name-edit');
+    const nameInput = document.getElementById('profile-name-input');
+    const playerName = document.getElementById('profile-player-name');
+    
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            nameDisplay.classList.add('hidden');
+            nameEdit.classList.remove('hidden');
+            nameInput.value = GameState.stats.playerName || 'Cipher Agent';
+            nameInput.focus();
+            nameInput.select();
+        });
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const newName = nameInput.value.trim();
+            if (newName && newName.length > 0) {
+                GameState.stats.playerName = newName;
+                saveStats();
+                if (playerName) playerName.textContent = newName;
+                showToast('Name updated!', 'success');
+            }
+            nameDisplay.classList.remove('hidden');
+            nameEdit.classList.add('hidden');
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            nameDisplay.classList.remove('hidden');
+            nameEdit.classList.add('hidden');
+        });
+    }
+    
+    if (nameInput) {
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveBtn.click();
+            } else if (e.key === 'Escape') {
+                cancelBtn.click();
+            }
+        });
+    }
+}
+
+// Tab Switching
+function initProfileTabs() {
+    const tabs = document.querySelectorAll('.profile-tab');
+    const panes = document.querySelectorAll('.tab-pane');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            // Update tab buttons
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update panes
+            panes.forEach(pane => {
+                pane.classList.remove('active');
+                if (pane.id === `tab-${targetTab}`) {
+                    pane.classList.add('active');
+                }
+            });
+        });
+    });
+    
+    // Achievement filters
+    const filters = document.querySelectorAll('.achievement-filter');
+    filters.forEach(filter => {
+        filter.addEventListener('click', () => {
+            filters.forEach(f => f.classList.remove('active'));
+            filter.classList.add('active');
+            updateAchievementsGrid(filter.dataset.filter);
+        });
+    });
+    
+    // Theme cards
+    const themeCards = document.querySelectorAll('.theme-card');
+    themeCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const themeName = card.dataset.theme;
+            if (GameState.stats.unlockedThemes.includes(themeName)) {
+                Themes.apply(themeName);
+                updateThemesTab();
+                showToast(`Theme changed to ${Themes.definitions[themeName].name}!`, 'success');
+            } else {
+                showToast('🔒 This theme is locked!', 'error');
+            }
+        });
+    });
+    
+    // Reset stats button in profile
+    const resetBtn = document.getElementById('tab-reset-stats');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all your stats? This cannot be undone.')) {
+                resetStats();
+                updateProfileScreen();
+            }
+        });
+    }
 }
 
 // =========================================
@@ -2626,6 +2760,7 @@ function init() {
     if (GameState.stats.totalCiphersSolved === undefined) GameState.stats.totalCiphersSolved = GameState.stats.passwordsCracked || 0;
     if (GameState.stats.endlessHighScore === undefined) GameState.stats.endlessHighScore = 0;
     if (GameState.stats.endlessHighRound === undefined) GameState.stats.endlessHighRound = 0;
+    if (GameState.stats.playerName === undefined) GameState.stats.playerName = 'Cipher Agent';
     
     // Load saved theme
     const savedTheme = localStorage.getItem('cycrack_theme') || 'cyber';
@@ -2636,7 +2771,6 @@ function init() {
     updateLevelButtons();
     updateHeaderStats();
     updateXPDisplay();
-    updateThemeButtons();
     updateDailyStreakDisplay();
     initEventListeners();
     Confetti.init();
