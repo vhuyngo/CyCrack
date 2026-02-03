@@ -17,8 +17,8 @@
         <!-- Header -->
         <header class="header">
             <div class="logo">
-                <span class="logo-icon">🔐</span>
-                <h1>CyCrack</h1>
+                <img src="CyCrack_Logo.png" alt="CyCrack" class="logo-img">
+                <img src="CyCrack_Text.png" alt="CyCrack" class="logo-text-img">
             </div>
             <div class="header-right">
                 <div class="header-stats">
@@ -30,13 +30,20 @@
                             <span class="stat-value" id="streak">0</span>
                         </div>
                     </div>
-                    <div class="stat">
-                        <span class="stat-label">Level</span>
-                        <span class="stat-value" id="current-level">1</span>
-                    </div>
                 </div>
                 <button class="profile-btn rank-bronze" id="profile-btn" title="View Profile">
-                    <span class="profile-icon">👤</span>
+                    <span class="profile-btn-inner">
+                        <span class="profile-icon" id="profile-icon-svg">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="profile-icon-svg">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </span>
+                        <span class="profile-level-ring">
+                            <svg class="profile-level-ring-svg" viewBox="0 0 32 16">
+                                <text x="16" y="12" class="profile-level-num" id="profile-level-num" text-anchor="middle">1</text>
+                            </svg>
+                        </span>
+                    </span>
                 </button>
             </div>
         </header>
@@ -47,8 +54,8 @@
             <section id="start-screen" class="screen active">
                 <div class="start-content">
                     <div class="start-logo">
-                        <div class="start-icon animated-lock">🔓</div>
-                        <h2>Welcome to CyCrack</h2>
+                        <img src="CyCrack_Logo.png" alt="CyCrack" class="start-logo-img">
+                        <img src="CyCrack_Text.png" alt="CyCrack" class="start-text-img">
                         <p>Test your cryptography skills by decoding encrypted passwords!</p>
                     </div>
                     
@@ -88,18 +95,15 @@
                         </div>
                     </div>
 
-                    <div class="start-buttons">
+                    <div class="start-buttons-row">
+                        <button id="how-to-play-btn" class="btn btn-secondary btn-icon" title="How to Play">
+                            <span class="btn-icon-symbol">?</span>
+                        </button>
                         <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
                             Start Game <span class="btn-arrow">→</span>
                         </button>
-                    </div>
-                    
-                    <div class="start-buttons-secondary">
-                        <button id="endless-mode-btn" class="btn btn-secondary btn-icon" title="Endless Mode">
-                            <span class="btn-icon-symbol">∞</span>
-                        </button>
-                        <button id="how-to-play-btn" class="btn btn-secondary btn-icon" title="How to Play">
-                            <span class="btn-icon-symbol">?</span>
+                        <button id="endless-mode-btn" class="btn btn-secondary btn-large" title="Endless Mode">
+                            <span class="endless-symbol">∞</span><span class="endless-mode-label"> Mode</span>
                         </button>
                     </div>
                 </div>
@@ -118,6 +122,10 @@
                             <div class="cipher-header">
                                 <h3 id="cipher-name">???</h3>
                                 <span class="cipher-difficulty" id="cipher-difficulty">???</span>
+                            </div>
+                            <div class="cipher-category-badge" id="cipher-category-badge">
+                                <span class="category-label">Category:</span>
+                                <span id="cipher-category-text">???</span>
                             </div>
                             <p class="cipher-description hidden" id="cipher-description"></p>
                             <div class="cipher-example-box hidden" id="cipher-example-box">
@@ -252,7 +260,7 @@
                     <div class="result-actions">
                         <button id="next-challenge-btn" class="btn btn-primary btn-large">
                             Next Challenge
-                            <span class="btn-icon">→</span>
+                            <span class="btn-arrow">→</span>
                         </button>
                         <button id="back-to-menu-btn" class="btn btn-secondary">
                             Back to Menu
@@ -328,8 +336,12 @@
                     <div class="profile-hero">
                         <div class="profile-hero-bg"></div>
                         <div class="profile-hero-content">
-                            <div class="profile-avatar-large">
-                                <span class="avatar-emoji" id="profile-avatar-emoji">🔓</span>
+                            <div class="profile-avatar-large clickable-avatar" id="profile-avatar-clickable" title="Customize icon color">
+                                <span class="avatar-icon-svg" id="profile-avatar-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                </span>
                                 <span class="avatar-level-badge" id="profile-hero-level">1</span>
                             </div>
                             <div class="profile-identity">
@@ -344,7 +356,7 @@
                                 </div>
                                 <p class="profile-rank-title" id="profile-rank-title">Rookie Decoder</p>
                                 <div class="profile-quick-stats">
-                                    <div class="quick-stat">
+                                    <div class="quick-stat quick-stat-streak" id="profile-streak-quick-stat" title="+0% XP bonus">
                                         <span class="quick-stat-icon">🔥</span>
                                         <span class="quick-stat-value" id="profile-hero-streak">0</span>
                                         <span class="quick-stat-label">Day Streak</span>
@@ -397,19 +409,8 @@
                         <!-- Level Tab -->
                         <div class="tab-pane active" id="tab-level">
                             <div class="tab-section">
-                                <h3 class="tab-section-title">Daily Streak</h3>
-                                <div class="streak-display">
-                                    <div class="streak-flame">🔥</div>
-                                    <div class="streak-info">
-                                        <span class="streak-count" id="tab-streak-count">0</span>
-                                        <span class="streak-label">Day Streak</span>
-                                    </div>
-                                    <div class="streak-bonus">
-                                        <span class="bonus-label">XP Bonus</span>
-                                        <span class="bonus-value" id="tab-streak-bonus">+0%</span>
-                                    </div>
-                                </div>
-                                <div class="streak-calendar" id="streak-calendar">
+                                <h3 class="tab-section-title">Leaderboard</h3>
+                                <div class="leaderboard-list" id="tab-leaderboard">
                                     <!-- Generated by JS -->
                                 </div>
                             </div>
@@ -475,60 +476,6 @@
                                         <div class="level-card-status">
                                             <span class="status-icon">🔒</span>
                                             <span>Locked</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="tab-section">
-                                <h3 class="tab-section-title">Level Rewards</h3>
-                                <div class="rewards-timeline">
-                                    <div class="reward-item unlocked">
-                                        <div class="reward-level">Lv.1</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">🎮</span>
-                                            <span class="reward-name">Game Access</span>
-                                        </div>
-                                    </div>
-                                    <div class="reward-item">
-                                        <div class="reward-level">Lv.5</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">🌿</span>
-                                            <span class="reward-name">Matrix Theme</span>
-                                        </div>
-                                    </div>
-                                    <div class="reward-item">
-                                        <div class="reward-level">Lv.10</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">🌊</span>
-                                            <span class="reward-name">Ocean Theme</span>
-                                        </div>
-                                    </div>
-                                    <div class="reward-item">
-                                        <div class="reward-level">Lv.15</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">🌅</span>
-                                            <span class="reward-name">Sunset Theme</span>
-                                        </div>
-                                    </div>
-                                    <div class="reward-item">
-                                        <div class="reward-level">Lv.20</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">👑</span>
-                                            <span class="reward-name">Royal Theme</span>
-                                        </div>
-                                    </div>
-                                    <div class="reward-item">
-                                        <div class="reward-level">Lv.25</div>
-                                        <div class="reward-connector"></div>
-                                        <div class="reward-content">
-                                            <span class="reward-icon">💀</span>
-                                            <span class="reward-name">Hacker Theme</span>
                                         </div>
                                     </div>
                                 </div>
@@ -626,14 +573,10 @@
 
                         <!-- Achievements Tab -->
                         <div class="tab-pane" id="tab-achievements">
-                            <div class="achievements-header">
+                            <div class="achievements-header achievements-header-centered">
                                 <div class="achievements-summary">
                                     <span class="achievements-count" id="tab-achievements-unlocked">0</span>
-                                    <span class="achievements-total">/ <span id="tab-achievements-total">25</span> Unlocked</span>
-                                </div>
-                                <div class="achievements-xp">
-                                    <span class="xp-earned" id="tab-achievements-xp">0</span>
-                                    <span class="xp-label">XP Earned</span>
+                                    <span class="achievements-total">/ <span id="tab-achievements-total">27</span></span>
                                 </div>
                             </div>
 
@@ -654,6 +597,8 @@
                                 <p class="themes-description">Customize your CyCrack experience! Unlock new themes by leveling up.</p>
                             </div>
 
+                            <div class="tab-section">
+                                <h3 class="tab-section-title">Themes</h3>
                             <div class="themes-showcase" id="tab-themes-showcase">
                                 <div class="theme-card active" data-theme="cyber">
                                     <div class="theme-preview-large cyber-preview-large">
@@ -733,10 +678,48 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <!-- Icon Customization Modal -->
+            <div id="icon-customization-modal" class="modal modal-blend">
+                <div class="modal-content icon-customization-modal">
+                    <button class="modal-close" id="close-icon-customization">&times;</button>
+                    <h2>Icon Customization</h2>
+                    
+                    <div class="icon-customization-content">
+                        <div class="icon-presets-row">
+                            <button class="icon-preset-sq" data-color="#e53935" style="background-color:#e53935" title="Red"></button>
+                            <button class="icon-preset-sq" data-color="#ff9800" style="background-color:#ff9800" title="Orange"></button>
+                            <button class="icon-preset-sq" data-color="#ffeb3b" style="background-color:#ffeb3b" title="Yellow"></button>
+                            <button class="icon-preset-sq" data-color="#4caf50" style="background-color:#4caf50" title="Green"></button>
+                            <button class="icon-preset-sq" data-color="#2196f3" style="background-color:#2196f3" title="Blue"></button>
+                            <button class="icon-preset-sq" data-color="#3f51b5" style="background-color:#3f51b5" title="Indigo"></button>
+                            <button class="icon-preset-sq" data-color="#9c27b0" style="background-color:#9c27b0" title="Violet"></button>
+                        </div>
+                        <div class="icon-picker-rectangles">
+                            <div class="icon-picker-gradient" id="icon-picker-gradient">
+                                <div class="icon-picker-cursor" id="icon-gradient-cursor"></div>
+                            </div>
+                            <div class="icon-picker-hue" id="icon-picker-hue">
+                                <div class="icon-picker-hue-slider" id="icon-hue-slider"></div>
+                            </div>
+                        </div>
+                        <div class="icon-rgb-row">
+                            <span class="icon-rgb-label">RGB</span>
+                            <span class="icon-rgb-display" id="icon-rgb-display">0 0 0</span>
+                            <div class="icon-rgb-edit hidden" id="icon-rgb-edit">
+                                <input type="number" id="icon-rgb-r" min="0" max="255" placeholder="R">
+                                <input type="number" id="icon-rgb-g" min="0" max="255" placeholder="G">
+                                <input type="number" id="icon-rgb-b" min="0" max="255" placeholder="B">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- How to Play Modal -->
             <div id="how-to-play-modal" class="modal">

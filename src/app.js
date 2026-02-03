@@ -79,9 +79,9 @@ const GameState = {
 // XP & Leveling System
 // =========================================
 const XPSystem = {
-    // XP required for each level (exponential curve)
+    // XP required for each level (exponential curve - steeper to make leveling harder)
     getXPForLevel(level) {
-        return Math.floor(100 * Math.pow(1.5, level - 1));
+        return Math.floor(150 * Math.pow(1.6, level - 1));
     },
     
     // Get total XP needed to reach a level
@@ -507,7 +507,6 @@ const DOM = {
     
     // Header stats
     totalScoreEl: document.getElementById('total-score'),
-    currentLevelEl: document.getElementById('current-level'),
     streakEl: document.getElementById('streak'),
     
     // Start screen
@@ -852,7 +851,9 @@ function resetStats() {
 // =========================================
 function updateHeaderStats() {
     DOM.totalScoreEl.textContent = GameState.totalScore.toLocaleString();
-    DOM.currentLevelEl.textContent = GameState.currentLevel;
+    const playerLevel = XPSystem.calculateLevel(GameState.stats.xp).level;
+    const levelNum = document.getElementById('profile-level-num');
+    if (levelNum) levelNum.textContent = playerLevel;
     DOM.streakEl.textContent = GameState.streak;
 }
 
@@ -1059,22 +1060,31 @@ function resetCipherPanel() {
     DOM.panelContent.classList.remove('hidden');
     DOM.cipherDescription.classList.add('hidden');
     DOM.cipherExampleBox.classList.add('hidden');
-    DOM.cipherCategoryBadge.classList.add('hidden');
 }
 
 function showCipherNameUpfront() {
     const challenge = GameState.currentChallenge;
     if (!challenge) return;
     
+    const cipher = Ciphers[challenge.cipherName];
+    const displayName = challenge.cipherDisplayName || (cipher && cipher.name) || '???';
+    const category = challenge.cipherCategory || (challenge.cipherName && Levels.getCipherCategory(challenge.cipherName)) || 'Unknown';
+    
     // Show cipher name immediately (educational approach)
-    DOM.cipherName.textContent = challenge.cipherDisplayName;
-    DOM.cipherDifficulty.textContent = challenge.cipherDifficulty;
-    DOM.cipherDifficulty.className = `cipher-difficulty ${challenge.cipherDifficulty}`;
+    DOM.cipherName.textContent = displayName;
+    DOM.cipherDifficulty.textContent = challenge.cipherDifficulty || (cipher && cipher.difficulty) || '???';
+    DOM.cipherDifficulty.className = `cipher-difficulty ${challenge.cipherDifficulty || (cipher && cipher.difficulty) || 'medium'}`;
+    
+    // Show cipher category
+    if (DOM.cipherCategoryBadge && DOM.cipherCategoryText) {
+        DOM.cipherCategoryBadge.classList.remove('hidden');
+        DOM.cipherCategoryText.textContent = category;
+    }
     
     // Show cipher name badge under encrypted text
     if (DOM.cipherNameBadge) {
         DOM.cipherNameBadge.classList.remove('hidden');
-        DOM.cipherNameText.textContent = challenge.cipherDisplayName;
+        DOM.cipherNameText.textContent = displayName;
     }
 }
 
@@ -1083,7 +1093,9 @@ function revealCipherDescription() {
     const challenge = GameState.currentChallenge;
     if (!challenge) return;
     
-    DOM.cipherDescription.textContent = challenge.cipherDescription;
+    const cipher = Ciphers[challenge.cipherName];
+    const description = challenge.cipherDescription || (cipher && cipher.description) || 'No description available.';
+    DOM.cipherDescription.textContent = description;
     DOM.cipherDescription.classList.remove('hidden');
 }
 
@@ -1442,7 +1454,11 @@ function nextEndlessChallenge() {
         cipherName: randomCipher,
         cipherParams: cipherParams,
         level: 0,
-        maxAttempts: 999
+        maxAttempts: 999,
+        cipherDisplayName: cipher.name,
+        cipherDescription: cipher.description,
+        cipherCategory: Levels.getCipherCategory(randomCipher),
+        cipherDifficulty: cipher.difficulty || 'medium'
     };
     
     GameState.timeElapsed = 0;
@@ -1517,6 +1533,23 @@ function updateEndlessProgress() {
 function endEndlessMode(success) {
     stopTimer();
     
+    // Save to game history for leaderboard
+    if (!GameState.stats.gameHistory) GameState.stats.gameHistory = [];
+    const acc = GameState.endlessRound > 0
+        ? Math.round((GameState.levelStats.correctAnswers / GameState.endlessRound) * 100)
+        : 0;
+    GameState.stats.gameHistory.push({
+        timestamp: Date.now(),
+        level: 0,
+        score: GameState.totalScore,
+        accuracy: acc,
+        challengesCompleted: GameState.endlessRound,
+        totalChallenges: GameState.endlessRound
+    });
+    if (GameState.stats.gameHistory.length > 50) {
+        GameState.stats.gameHistory = GameState.stats.gameHistory.slice(-50);
+    }
+    
     // Update high scores
     if (GameState.endlessRound > GameState.stats.endlessHighRound) {
         GameState.stats.endlessHighRound = GameState.endlessRound;
@@ -1543,7 +1576,7 @@ function showEndlessGameOver() {
     DOM.resultPoints.textContent = GameState.totalScore.toLocaleString();
     DOM.resultTime.textContent = 'N/A';
     
-    DOM.nextChallengeBtn.innerHTML = 'Try Again <span class="btn-icon">→</span>';
+    DOM.nextChallengeBtn.innerHTML = 'Try Again <span class="btn-arrow">→</span>';
     
     updateHeaderStats();
     showScreen('result-screen');
@@ -1749,7 +1782,7 @@ function showEndlessRoundComplete() {
     DOM.resultPoints.textContent = `+${GameState.roundScore}`;
     DOM.resultTime.textContent = formatTime(GameState.timeElapsed);
     
-    DOM.nextChallengeBtn.innerHTML = 'Next Round <span class="btn-icon">→</span>';
+    DOM.nextChallengeBtn.innerHTML = 'Next Round <span class="btn-arrow">→</span>';
     
     updateHeaderStats();
     showScreen('result-screen');
@@ -1807,7 +1840,7 @@ function endChallenge(success) {
     if (GameState.challengeNumber >= GameState.totalChallenges) {
         DOM.nextChallengeBtn.innerHTML = `Complete Level <span class="btn-icon">→</span>`;
     } else {
-        DOM.nextChallengeBtn.innerHTML = `Next Challenge <span class="btn-icon">→</span>`;
+        DOM.nextChallengeBtn.innerHTML = `Next Challenge <span class="btn-arrow">→</span>`;
     }
     
     updateHeaderStats();
@@ -2307,6 +2340,13 @@ function updateProfileScreen() {
     const heroAchievements = document.getElementById('profile-hero-achievements');
     
     if (heroStreak) heroStreak.textContent = stats.dailyStreak || 0;
+    
+    // Streak XP bonus tooltip
+    const streakQuickStat = document.getElementById('profile-streak-quick-stat');
+    if (streakQuickStat) {
+        const bonus = Math.min((stats.dailyStreak || 0), 100);
+        streakQuickStat.title = `+${bonus}% XP bonus`;
+    }
     if (heroCracked) heroCracked.textContent = stats.passwordsCracked || 0;
     if (heroAchievements) heroAchievements.textContent = (stats.achievements || []).length;
     
@@ -2369,42 +2409,16 @@ function updateProfileRankColor(level) {
     profileBtn.classList.add(rankClass);
 }
 
+function applyProfileIconColor(color) {
+    document.documentElement.style.setProperty('--profile-icon-color', color);
+}
+
 // Level Tab
 function updateLevelTab() {
     const stats = GameState.stats;
     
-    // Update streak display
-    const streakCount = document.getElementById('tab-streak-count');
-    const streakBonus = document.getElementById('tab-streak-bonus');
-    
-    if (streakCount) streakCount.textContent = stats.dailyStreak || 0;
-    if (streakBonus) {
-        const bonus = Math.min((stats.dailyStreak || 0), 100);
-        streakBonus.textContent = `+${bonus}%`;
-    }
-    
-    // Update streak calendar (last 7 days)
-    const calendar = document.getElementById('streak-calendar');
-    if (calendar) {
-        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-        const today = new Date();
-        let calendarHTML = '';
-        
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayName = days[date.getDay()];
-            const isToday = i === 0;
-            const isActive = i < (stats.dailyStreak || 0);
-            
-            calendarHTML += `
-                <div class="calendar-day ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}">
-                    ${dayName}
-                </div>
-            `;
-        }
-        calendar.innerHTML = calendarHTML;
-    }
+    // Update leaderboard (top scores from game history)
+    updateLeaderboard();
     
     // Update level progress cards
     const levelCards = document.querySelectorAll('.level-card');
@@ -2419,16 +2433,37 @@ function updateLevelTab() {
         if (statusIcon) statusIcon.textContent = isUnlocked ? '✓' : '🔒';
         if (statusText) statusText.textContent = isUnlocked ? 'Unlocked' : 'Locked';
     });
+}
+
+function updateLeaderboard() {
+    const container = document.getElementById('tab-leaderboard');
+    if (!container) return;
     
-    // Update rewards timeline
-    const rewardItems = document.querySelectorAll('.reward-item');
-    const xpData = XPSystem.calculateLevel(stats.xp);
-    const rewardLevels = [1, 5, 10, 15, 20, 25];
+    const stats = GameState.stats;
+    const history = stats.gameHistory || [];
     
-    rewardItems.forEach((item, index) => {
-        const requiredLevel = rewardLevels[index];
-        item.classList.toggle('unlocked', xpData.level >= requiredLevel);
+    if (history.length === 0) {
+        container.innerHTML = '<p class="no-games-message">Play games to appear on the leaderboard!</p>';
+        return;
+    }
+    
+    const sorted = [...history].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10);
+    const playerName = stats.playerName || 'Cipher Agent';
+    
+    let html = '';
+    sorted.forEach((game, i) => {
+        const levelName = (game.level === 0 || !game.level) ? 'Endless' : (Levels.getLevel(game.level)?.name || `Level ${game.level}`);
+        html += `
+            <div class="leaderboard-item">
+                <span class="leaderboard-rank">#${i + 1}</span>
+                <span class="leaderboard-name">${playerName}</span>
+                <span class="leaderboard-level">${levelName}</span>
+                <span class="leaderboard-score">${(game.score || 0).toLocaleString()}</span>
+            </div>
+        `;
     });
+    
+    container.innerHTML = html;
 }
 
 // Stats Tab
@@ -2548,19 +2583,15 @@ function updateRecentGamesList() {
 
 // Achievements Tab
 function updateAchievementsTab() {
-    const stats = GameState.stats;
     const achievements = Achievements.getAll();
     const unlockedCount = achievements.filter(a => a.unlocked).length;
-    const totalXP = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.xp, 0);
     
-    // Update header
+    // Update header (centered)
     const unlocked = document.getElementById('tab-achievements-unlocked');
     const total = document.getElementById('tab-achievements-total');
-    const xpEarned = document.getElementById('tab-achievements-xp');
     
     if (unlocked) unlocked.textContent = unlockedCount;
     if (total) total.textContent = achievements.length;
-    if (xpEarned) xpEarned.textContent = `+${totalXP} XP`;
     
     // Update grid
     updateAchievementsGrid('all');
@@ -2743,6 +2774,201 @@ function initProfileTabs() {
             }
         });
     }
+    
+    // Icon customization - avatar click opens modal
+    initIconCustomization();
+}
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return { r: 0, g: 0, b: 0 };
+    return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    };
+}
+
+function rgbToHex(r, g, b) {
+    r = Math.max(0, Math.min(255, Math.round(r)));
+    g = Math.max(0, Math.min(255, Math.round(g)));
+    b = Math.max(0, Math.min(255, Math.round(b)));
+    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToHsl(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return { h: 210, s: 100, l: 50 };
+    let r = parseInt(result[1], 16) / 255, g = parseInt(result[2], 16) / 255, b = parseInt(result[3], 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+        h = s = 0;
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            default: h = ((r - g) / d + 4) / 6;
+        }
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+        const k = (n + h / 30) % 12;
+        return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    };
+    return '#' + [0, 8, 4].map(i => Math.round(255 * f(i)).toString(16).padStart(2, '0')).join('');
+}
+
+function initIconCustomization() {
+    const avatarClickable = document.getElementById('profile-avatar-clickable');
+    const modal = document.getElementById('icon-customization-modal');
+    const closeBtn = document.getElementById('close-icon-customization');
+    const gradientEl = document.getElementById('icon-picker-gradient');
+    const hueEl = document.getElementById('icon-picker-hue');
+    const cursorEl = document.getElementById('icon-gradient-cursor');
+    const hueSliderEl = document.getElementById('icon-hue-slider');
+    const presetBtns = document.querySelectorAll('.icon-preset-sq');
+    const rgbDisplay = document.getElementById('icon-rgb-display');
+    const rgbEdit = document.getElementById('icon-rgb-edit');
+    const rgbR = document.getElementById('icon-rgb-r');
+    const rgbG = document.getElementById('icon-rgb-g');
+    const rgbB = document.getElementById('icon-rgb-b');
+    
+    let currentHsl = hexToHsl(GameState.stats.iconColor || '#2196f3');
+    
+    const updateRgbDisplay = (hex) => {
+        const rgb = hexToRgb(hex);
+        if (rgbDisplay) rgbDisplay.textContent = `${rgb.r} ${rgb.g} ${rgb.b}`;
+    };
+    
+    const updateGradientBg = () => {
+        const hueColor = hslToHex(currentHsl.h, 100, 50);
+        gradientEl.style.background = `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})`;
+    };
+    
+    const setIconColor = (hex) => {
+        GameState.stats.iconColor = hex;
+        saveStats();
+        applyProfileIconColor(hex);
+        currentHsl = hexToHsl(hex);
+        updateGradientBg();
+        updatePickerPosition();
+        updateRgbDisplay(hex);
+        presetBtns.forEach(p => p.classList.toggle('selected', p.dataset.color?.toLowerCase() === hex.toLowerCase()));
+    };
+    
+    const updatePickerPosition = () => {
+        const sat = currentHsl.s / 100;
+        const light = 1 - (currentHsl.l / 100);
+        const gRect = gradientEl.getBoundingClientRect();
+        cursorEl.style.left = `${Math.max(0, Math.min(gRect.width - 14, sat * gRect.width - 7))}px`;
+        cursorEl.style.top = `${Math.max(0, Math.min(gRect.height - 14, light * gRect.height - 7))}px`;
+        const hueH = hueEl.offsetHeight || 180;
+        hueSliderEl.style.top = `${(currentHsl.h / 360) * (hueH - 10)}px`;
+    };
+    
+    const openModal = () => {
+        showModal('icon-customization-modal');
+        currentHsl = hexToHsl(GameState.stats.iconColor || '#2196f3');
+        updateGradientBg();
+        updateRgbDisplay(GameState.stats.iconColor || '#2196f3');
+        if (rgbEdit) rgbEdit.classList.add('hidden');
+        if (rgbDisplay) rgbDisplay.classList.remove('hidden');
+        presetBtns.forEach(p => p.classList.toggle('selected', p.dataset.color?.toLowerCase() === (GameState.stats.iconColor || '').toLowerCase()));
+        requestAnimationFrame(() => updatePickerPosition());
+    };
+    
+    if (rgbDisplay) {
+        rgbDisplay.addEventListener('click', () => {
+            const hex = GameState.stats.iconColor || '#2196f3';
+            const rgb = hexToRgb(hex);
+            rgbDisplay.classList.add('hidden');
+            rgbEdit.classList.remove('hidden');
+            rgbR.value = rgb.r;
+            rgbG.value = rgb.g;
+            rgbB.value = rgb.b;
+            rgbR.focus();
+        });
+    }
+    
+    const applyRgbEdit = () => {
+        const r = parseInt(rgbR.value) || 0;
+        const g = parseInt(rgbG.value) || 0;
+        const b = parseInt(rgbB.value) || 0;
+        const hex = rgbToHex(r, g, b);
+        setIconColor(hex);
+        rgbEdit.classList.add('hidden');
+        rgbDisplay.classList.remove('hidden');
+    };
+    
+    if (rgbR && rgbG && rgbB) {
+        [rgbR, rgbG, rgbB].forEach(input => {
+            input.addEventListener('change', applyRgbEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') applyRgbEdit();
+                if (e.key === 'Escape') {
+                    rgbEdit.classList.add('hidden');
+                    rgbDisplay.classList.remove('hidden');
+                }
+            });
+        });
+    }
+    
+    if (avatarClickable) avatarClickable.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
+    
+    if (closeBtn) closeBtn.addEventListener('click', () => hideModal('icon-customization-modal'));
+    
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setIconColor(btn.dataset.color);
+            showToast('Icon color updated!', 'success');
+        });
+    });
+    
+    gradientEl.addEventListener('click', (e) => {
+        const rect = gradientEl.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        currentHsl.s = Math.round(Math.max(0, Math.min(1, x)) * 100);
+        currentHsl.l = Math.round((1 - Math.max(0, Math.min(1, y))) * 100);
+        setIconColor(hslToHex(currentHsl.h, currentHsl.s, currentHsl.l));
+    });
+    
+    hueEl.addEventListener('click', (e) => {
+        const rect = hueEl.getBoundingClientRect();
+        const y = (e.clientY - rect.top) / rect.height;
+        currentHsl.h = Math.round(Math.max(0, Math.min(1, y)) * 360);
+        setIconColor(hslToHex(currentHsl.h, currentHsl.s, currentHsl.l));
+    });
+    
+    let gradientDrag = false, hueDrag = false;
+    
+    gradientEl.addEventListener('mousedown', () => gradientDrag = true);
+    hueEl.addEventListener('mousedown', () => hueDrag = true);
+    document.addEventListener('mouseup', () => { gradientDrag = false; hueDrag = false; });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (gradientDrag) {
+            const rect = gradientEl.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            currentHsl.s = Math.round(Math.max(0, Math.min(1, x)) * 100);
+            currentHsl.l = Math.round((1 - Math.max(0, Math.min(1, y))) * 100);
+            setIconColor(hslToHex(currentHsl.h, currentHsl.s, currentHsl.l));
+        } else if (hueDrag) {
+            const rect = hueEl.getBoundingClientRect();
+            const y = (e.clientY - rect.top) / rect.height;
+            currentHsl.h = Math.round(Math.max(0, Math.min(1, y)) * 360);
+            setIconColor(hslToHex(currentHsl.h, currentHsl.s, currentHsl.l));
+        }
+    });
 }
 
 // =========================================
@@ -2761,6 +2987,7 @@ function init() {
     if (GameState.stats.endlessHighScore === undefined) GameState.stats.endlessHighScore = 0;
     if (GameState.stats.endlessHighRound === undefined) GameState.stats.endlessHighRound = 0;
     if (GameState.stats.playerName === undefined) GameState.stats.playerName = 'Cipher Agent';
+    if (GameState.stats.iconColor === undefined) GameState.stats.iconColor = '#2196f3';
     
     // Load saved theme
     const savedTheme = localStorage.getItem('cycrack_theme') || 'cyber';
@@ -2772,6 +2999,7 @@ function init() {
     updateHeaderStats();
     updateXPDisplay();
     updateDailyStreakDisplay();
+    applyProfileIconColor(GameState.stats.iconColor || '#2196f3');
     initEventListeners();
     Confetti.init();
     

@@ -17,7 +17,7 @@ const distDir = path.join(__dirname, 'dist');
 const jsFiles = ['app.js', 'ciphers.js', 'levels.js'];
 const cssFiles = ['styles.css'];
 const htmlFiles = ['index.html', '404.html'];
-const copyFiles = ['.nojekyll'];
+const copyFiles = ['.nojekyll', 'CyCrack_Logo.png', 'CyCrack_Text.png'];
 const rootCopyFiles = ['README.md']; // Files to copy from root, not src
 
 // Obfuscator options (high obfuscation)
