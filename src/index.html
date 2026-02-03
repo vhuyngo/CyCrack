@@ -38,10 +38,8 @@
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </span>
-                        <span class="profile-level-ring">
-                            <svg class="profile-level-ring-svg" viewBox="0 0 32 16">
-                                <text x="16" y="12" class="profile-level-num" id="profile-level-num" text-anchor="middle">1</text>
-                            </svg>
+                        <span class="profile-level-ring" aria-hidden="true">
+                            <span class="profile-level-badge" id="profile-level-num">1</span>
                         </span>
                     </span>
                 </button>
@@ -54,8 +52,11 @@
             <section id="start-screen" class="screen active">
                 <div class="start-content">
                     <div class="start-logo">
-                        <img src="CyCrack_Logo.png" alt="CyCrack" class="start-logo-img">
-                        <img src="CyCrack_Text.png" alt="CyCrack" class="start-text-img">
+                        <div class="start-logo-title">
+                            <h1 class="start-logo-heading">
+                                <img src="CyCrack_Text.png" alt="CyCrack" class="start-logo-wordmark">
+                            </h1>
+                        </div>
                         <p>Test your cryptography skills by decoding encrypted passwords!</p>
                     </div>
                     
@@ -95,15 +96,25 @@
                         </div>
                     </div>
 
-                    <div class="start-buttons-row">
-                        <button id="how-to-play-btn" class="btn btn-secondary btn-icon" title="How to Play">
-                            <span class="btn-icon-symbol">?</span>
-                        </button>
-                        <button id="start-game-btn" class="btn btn-primary btn-large pulse-animation">
-                            Start Game <span class="btn-arrow">→</span>
-                        </button>
-                        <button id="endless-mode-btn" class="btn btn-secondary btn-large" title="Endless Mode">
-                            <span class="endless-symbol">∞</span><span class="endless-mode-label"> Mode</span>
+                    <div class="start-actions">
+                        <div class="start-primary-actions">
+                            <button id="start-game-btn" class="start-action-btn start-action-btn--start pulse-animation">
+                                <span class="start-action-label">Start Game</span>
+                                <span class="start-action-arrow">→</span>
+                            </button>
+                            <button id="endless-mode-btn" class="start-action-btn start-action-btn--endless" title="Endless Mode">
+                                <span class="start-action-icon">∞</span>
+                                <span class="start-action-label">Endless Mode</span>
+                            </button>
+                        </div>
+
+                        <button id="how-to-play-btn" class="start-help-card" title="How to Play">
+                            <span class="start-help-icon">📖</span>
+                            <span class="start-help-text">
+                                <span class="start-help-title">New to CyCrack?</span>
+                                <span class="start-help-subtitle">Learn how to play</span>
+                            </span>
+                            <span class="start-help-arrow">→</span>
                         </button>
                     </div>
                 </div>

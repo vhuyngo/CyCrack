@@ -307,22 +307,34 @@ body::before {
     margin-bottom: var(--spacing-lg);
 }
 
-.start-logo-img {
-    height: 100px;
-    width: auto;
-    margin-bottom: var(--spacing-xs);
+.start-logo-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.start-text-img {
-    height: 40px;
+.start-logo-heading {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.start-logo-wordmark {
+    height: 72px;
     width: auto;
-    margin-bottom: var(--spacing-sm);
+    vertical-align: middle;
 }
 
 .start-logo p {
     color: var(--text-secondary);
     font-size: 0.9rem;
     text-align: center;
+    margin-top: var(--spacing-xs);
 }
 
 .difficulty-select {
@@ -2356,17 +2368,234 @@ body::before {
     font-weight: 600;
 }
 
-/* Start Buttons Container */
-.start-buttons-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    justify-items: center;
+/* =====================================================
+   Start Screen - Primary Actions (Homepage)
+   Recreates the "2 big buttons + help card" look
+   ===================================================== */
+.start-actions {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-    max-width: 400px;
+    align-items: center;
+}
+
+.start-primary-actions {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: var(--spacing-md);
+    justify-content: center;
+    justify-items: center;
+    width: 100%;
+}
+
+.start-action-btn {
+    height: 52px;
+    border: 0;
+    border-radius: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: fit-content;
+    padding: 0 22px;
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+    user-select: none;
+    white-space: nowrap;
+}
+
+.start-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+    filter: brightness(1.06) saturate(1.08);
+}
+
+.start-action-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.98);
+}
+
+.start-action-btn--start {
+    background: linear-gradient(90deg, #06c8ef 0%, #06da9a 100%);
+    box-shadow: 0 0 10px rgba(6, 200, 239, 0.2), 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.start-action-btn--endless {
+    background: linear-gradient(90deg, #a94cff 0%, #3d70ff 100%);
+    box-shadow: 0 0 10px rgba(169, 76, 255, 0.2), 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.start-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.start-action-label {
+    line-height: 1;
+}
+
+.start-action-arrow {
+    margin-left: var(--spacing-xs);
+    font-weight: 800;
+    opacity: 0.9;
+}
+
+.start-help-card {
+    width: fit-content;
+    max-width: min(100%, 360px);
+    align-self: center;
+    border: 0;
+    border-radius: 11px;
+    padding: 12px var(--spacing-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    text-align: left;
+    color: var(--text-primary);
+    background: #1a2254;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.start-help-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+.start-help-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.start-help-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.start-help-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.start-help-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.start-help-arrow {
     margin-left: auto;
-    margin-right: auto;
+    color: #d946ef;
+    font-weight: 800;
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .start-content {
+        max-width: min(560px, 100%);
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .start-logo-heading {
+        font-size: 1.75rem;
+    }
+    
+    .start-logo-wordmark {
+        height: 52px;
+    }
+
+}
+
+@media (max-width: 550px) {
+    .level-buttons {
+        gap: var(--spacing-xs);
+    }
+    
+    .level-btn {
+        padding: var(--spacing-sm);
+    }
+    
+    .level-num {
+        font-size: 1.5rem;
+    }
+    
+    .level-name {
+        font-size: 0.75rem;
+    }
+    
+    .level-desc {
+        font-size: 0.6rem;
+    }
+    
+    .start-logo-heading {
+        font-size: 1.5rem;
+    }
+    
+    .start-logo-wordmark {
+        height: 40px;
+    }
+}
+
+/* =====================================================
+   Header Profile - Level badge in bottom ring gap
+   ===================================================== */
+.profile-level-ring {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    left: auto;
+    transform: none;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-level-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: var(--accent-gold);
+    color: #000;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 
 .btn-icon {
@@ -2548,10 +2777,6 @@ body::before {
     }
     
     .themes-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .level-buttons {
         grid-template-columns: repeat(2, 1fr);
     }
     
@@ -3768,15 +3993,7 @@ body::before {
     inset: -2px;
     border-radius: var(--radius-full);
     padding: 2px;
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        var(--border-color) 0deg,
-        var(--border-color) 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        var(--border-color) 210deg,
-        var(--border-color) 360deg
-    );
+    background: var(--border-color);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -3807,30 +4024,7 @@ body::before {
 .profile-icon-svg {
     width: 100%;
     height: 100%;
-    color: var(--profile-icon-color, #2196f3);
-}
-
-.profile-level-ring {
-    position: absolute;
-    bottom: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profile-level-ring-svg {
-    width: 24px;
-    height: 14px;
-}
-
-.profile-level-ring .profile-level-num {
-    font-size: 10px;
-    font-weight: 700;
-    fill: var(--accent-secondary);
-    font-family: var(--font-sans);
+    color: var(--profile-icon-color, #ffffff);
 }
 
 /* Modal blend style - no blur, subtle overlay */
@@ -4015,15 +4209,7 @@ body::before {
     background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), var(--bg-secondary));
 }
 .profile-btn.rank-bronze::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #cd7f32 0deg,
-        #cd7f32 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #cd7f32 210deg,
-        #cd7f32 360deg
-    );
+    background: #cd7f32;
 }
 .profile-btn.rank-bronze:hover { box-shadow: 0 0 12px rgba(205, 127, 50, 0.4); }
 
@@ -4031,15 +4217,7 @@ body::before {
     background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), var(--bg-secondary));
 }
 .profile-btn.rank-silver::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #c0c0c0 0deg,
-        #c0c0c0 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #c0c0c0 210deg,
-        #c0c0c0 360deg
-    );
+    background: #c0c0c0;
 }
 .profile-btn.rank-silver:hover { box-shadow: 0 0 12px rgba(192, 192, 192, 0.4); }
 
@@ -4047,15 +4225,7 @@ body::before {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), var(--bg-secondary));
 }
 .profile-btn.rank-gold::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #ffd700 0deg,
-        #ffd700 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #ffd700 210deg,
-        #ffd700 360deg
-    );
+    background: #ffd700;
 }
 .profile-btn.rank-gold:hover { box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
 
@@ -4063,15 +4233,7 @@ body::before {
     background: linear-gradient(135deg, rgba(0, 191, 255, 0.2), var(--bg-secondary));
 }
 .profile-btn.rank-platinum::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #00bfff 0deg,
-        #00bfff 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #00bfff 210deg,
-        #00bfff 360deg
-    );
+    background: #00bfff;
 }
 .profile-btn.rank-platinum:hover { box-shadow: 0 0 12px rgba(0, 191, 255, 0.4); }
 
@@ -4079,15 +4241,7 @@ body::before {
     background: linear-gradient(135deg, rgba(185, 242, 255, 0.25), var(--bg-secondary));
 }
 .profile-btn.rank-diamond::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #b9f2ff 0deg,
-        #b9f2ff 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #b9f2ff 210deg,
-        #b9f2ff 360deg
-    );
+    background: #b9f2ff;
 }
 .profile-btn.rank-diamond:hover { box-shadow: 0 0 12px rgba(185, 242, 255, 0.5); }
 
@@ -4095,15 +4249,7 @@ body::before {
     background: linear-gradient(135deg, rgba(255, 170, 0, 0.25), var(--bg-secondary));
 }
 .profile-btn.rank-master::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #ffaa00 0deg,
-        #ffaa00 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #ffaa00 210deg,
-        #ffaa00 360deg
-    );
+    background: #ffaa00;
 }
 .profile-btn.rank-master:hover { box-shadow: 0 0 12px rgba(255, 170, 0, 0.5); }
 
@@ -4111,15 +4257,7 @@ body::before {
     background: linear-gradient(135deg, rgba(255, 69, 0, 0.25), var(--bg-secondary));
 }
 .profile-btn.rank-grandmaster::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #ff4500 0deg,
-        #ff4500 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #ff4500 210deg,
-        #ff4500 360deg
-    );
+    background: #ff4500;
 }
 .profile-btn.rank-grandmaster:hover { box-shadow: 0 0 12px rgba(255, 69, 0, 0.5); }
 
@@ -4128,42 +4266,14 @@ body::before {
     animation: champion-glow-bg 2s ease-in-out infinite;
 }
 .profile-btn.rank-champion::before {
-    background: conic-gradient(
-        from 0deg at 50% 50%,
-        #ff00ff 0deg,
-        #ff00ff 150deg,
-        transparent 150deg,
-        transparent 210deg,
-        #ff00ff 210deg,
-        #ff00ff 360deg
-    );
+    background: #ff00ff;
     animation: champion-glow 2s ease-in-out infinite;
 }
 .profile-btn.rank-champion:hover { box-shadow: 0 0 15px rgba(255, 0, 255, 0.6); }
 
 @keyframes champion-glow {
-    0%, 100% { 
-        background: conic-gradient(
-            from 0deg at 50% 50%,
-            #ff00ff 0deg,
-            #ff00ff 150deg,
-            transparent 150deg,
-            transparent 210deg,
-            #ff00ff 210deg,
-            #ff00ff 360deg
-        );
-    }
-    50% { 
-        background: conic-gradient(
-            from 0deg at 50% 50%,
-            #ffd700 0deg,
-            #ffd700 150deg,
-            transparent 150deg,
-            transparent 210deg,
-            #ffd700 210deg,
-            #ffd700 360deg
-        );
-    }
+    0%, 100% { background: #ff00ff; }
+    50% { background: #ffd700; }
 }
 
 @keyframes champion-glow-bg {
